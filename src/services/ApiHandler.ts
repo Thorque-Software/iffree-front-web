@@ -7,13 +7,9 @@ type ShiftsResponse = {
   items: Shift[];
   pagination: {
     page: number;
-    items: number;
-    totalItems: number;
-    totalPages: number;
+    pageSize: number;
   };
-  success: boolean;
-  error?: string;
-    
+  total: number;
 }
 
 export const getShifts = async () => {

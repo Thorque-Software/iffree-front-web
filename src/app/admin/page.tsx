@@ -9,20 +9,19 @@ import {
 } from '@tanstack/react-table';
 import { getShifts } from '@/services/ApiHandler';
 import { Shift } from '@/types/domain';
+import { formatDate } from '@/utils/utils';
 
 
 // Columnas de la tabla
-const columns: ColumnDef<Provider>[] = [
-  { accessorKey: 'nombre', header: 'Proveedor' },
-  { accessorKey: 'ciudad', header: 'Ciudad' },
-  { accessorKey: 'contacto', header: 'Contacto' },
-  { accessorKey: 'tipo', header: 'Tipo' },
-  { accessorKey: 'email', header: 'Email' },
-  { accessorKey: 'cuil', header: 'CUIL' },
-  { accessorKey: 'ingresos', header: 'Ingresos' },
+const columns: ColumnDef<Shift>[] = [
+  { accessorKey: 'start', header: 'Inicio' },
+  { accessorKey: 'end', header: 'Fin' },
+  { accessorKey: 'maxCapacity', header: 'Capacidad Máxima' },
+  { accessorKey: 'status', header: 'Estado' },
+  { accessorKey: 'availablePlaces', header: 'Lugares Disponibles' },
 ];
 
-const ProvidersTable = () => {
+const ShiftsTable = () => {
   const [Shifts, setShifts] = React.useState<Shift[]>([]);
 
   const table = useReactTable({
@@ -74,9 +73,10 @@ const ProvidersTable = () => {
                   key={cell.id}
                   className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
                 >
-                  {cell.column.id === 'ingresos'
-                    ? `$${(cell.getValue() as number).toLocaleString()}`
-                    : flexRender(cell.column.columnDef.cell, cell.getContext())}
+                  {['start', 'end'].includes(cell.column.id)
+                  ? formatDate(cell.getValue() as string)
+                  : flexRender(cell.column.columnDef.cell, cell.getContext())
+                  }
                 </td>
               ))}
             </tr>
@@ -88,4 +88,4 @@ const ProvidersTable = () => {
   );
 };
 
-export default ProvidersTable;
+export default ShiftsTable;
