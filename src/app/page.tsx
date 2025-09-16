@@ -2,19 +2,29 @@
 
 import { useState } from "react";
 import { UserIcon } from "@heroicons/react/24/outline";
+import { useAuth } from '@/hooks/useAuth'
 
 export default function Home() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [errorUser, setErrorUser] = useState(false);
-  const [errorPass, setErrorPass] = useState(false);
+  const { login } = useAuth()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Lógica de validación simulada
-    setErrorUser(email !== "demo@email.com");
-    setErrorPass(password !== "1234");
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setLoading(true)
+    try {
+      await login({ email, password })
+      // acá podés redirigir si querés
+      // router.push('/dashboard')
+    } catch (err: any) {
+      setError(err.message || 'Error en login')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -33,8 +43,7 @@ export default function Home() {
             <h1 className="text-lg font-medium mt-2">Iniciar sesión</h1>
           </div>
         <div className="w-full max-w-sm bg-white shadow rounded border border-gray-300 p-6">
-          
-
+          {loading ? <p className="text-blue-500">Cargando...</p> : 
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div>
@@ -45,9 +54,6 @@ export default function Home() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-              {errorUser && (
-                <p className="text-red-500 text-sm mt-1">Usuario no registrado</p>
-              )}
             </div>
 
             {/* Contraseña */}
@@ -59,9 +65,6 @@ export default function Home() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
-              {errorPass && (
-                <p className="text-red-500 text-sm mt-1">Contraseña incorrecta</p>
-              )}
             </div>
 
             {/* Botón */}
@@ -72,9 +75,11 @@ export default function Home() {
               Ingresar
             </button>
           </form>
+          }
 
           {/* Links */}
           <div className="flex justify-between mt-4 text-sm">
+            {error && <p className="text-red-500">{error}</p>}
             <a href="#" className="text-cyan-700 underline hover:text-cyan-500">
               Olvidé mi contraseña
             </a>

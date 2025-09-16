@@ -7,6 +7,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table';
+import Link from 'next/link';
 
 // Datos de ejemplo
 interface Reservation {
@@ -85,15 +86,15 @@ const ReservationsTable = () => {
     <div className="overflow-x-auto">
       <div className="flex justify-between mb-4">
         <h1 className="text-4xl font-semibold mb-1">Reservas</h1>
-        <button className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
+        <Link href="/admin/reservations/new" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition">
           + Nueva reserva
-        </button>
+        </Link>
       </div>
 
       <input
         type="text"
         placeholder="Buscar"
-        className="mb-4 p-2 border rounded w-full"
+        className="mb-4 p-2 border border-gray-300 rounded w-1/3"
         value={search}
         onChange={(e) => { setSearch(e.target.value); setPageIndex(0); }}
       />
@@ -136,7 +137,7 @@ const ReservationsTable = () => {
       </table>
 
       {/* Paginación */}
-      <div className="flex justify-end items-center mt-4 space-x-2">
+      <div className="flex justify-center items-center mt-4 space-x-2">
         <button
           onClick={() => setPageIndex(prev => Math.max(prev - 1, 0))}
           disabled={pageIndex === 0}

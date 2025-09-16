@@ -1,7 +1,8 @@
 'use client'
+
 import { createContext, useContext, useState, useEffect } from 'react'
-import { apiFetch } from '@/lib/fetcher'
-import type { User, Credentials, AuthResponse, ApiResponse } from '@/types/api'
+import { apiFetch, ApiResponse } from '@/lib/fetcher'
+import type { User, Credentials, AuthResponse } from '@/types/api'
 
 export type AuthContextType = {
   user: User | null
@@ -22,25 +23,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   const login = async (creds: Credentials) => {
-    const res = await apiFetch<ApiResponse<AuthResponse>>('/auth/login', {
+    const res = await apiFetch<AuthResponse>('/users/login', {
       method: 'POST',
       body: JSON.stringify(creds),
     })
-    if (!res.ok) throw new Error(res.error || 'Login failed')
-    localStorage.setItem('token', res.data!.token)
-    setUser(res.data!.user)
+    if (!res.success || !res.data) throw new Error(res.error || 'Login failed')
+
+    localStorage.setItem('token', res.data.token)
+    setUser(res.data.user)
   }
 
   const logout = async () => {
-    await apiFetch('/auth/logout', { method: 'POST' })
+    await apiFetch('/users/logout', { method: 'POST' })
     localStorage.removeItem('token')
     setUser(null)
   }
 
   const refreshUser = async () => {
     try {
-      const data = await apiFetch<ApiResponse<User>>('/auth/me')
-      if (data.ok) setUser(data.data as User)
+      const res = await apiFetch<User>('/auth/me')
+      if (res.success && res.data) {
+        setUser(res.data)
+      } else {
+        setUser(null)
+      }
     } catch (e) {
       setUser(null)
     } finally {

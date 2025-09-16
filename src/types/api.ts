@@ -15,7 +15,7 @@ totalPages: number
 
 
 export type Credentials = { email: string; password: string }
-export type Role = 'admin' | 'provider' | 'customer' | 'boat_provider'
+export type Role = 'admin' | 'provider' | 'finalUser' | 'providerBoat'
 
 
 export type User = {

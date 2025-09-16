@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { apiFetch } from '@/lib/fetcher'
+import { apiFetch, ApiResponse } from '@/lib/fetcher'
 
 type FetchQueryOptions = {
   enabled?: boolean
-  params?: Record<string, any> // para query params dinámicos
+  params?: Record<string, any>
 }
 
 export const useFetchQuery = <T>(
@@ -11,7 +11,6 @@ export const useFetchQuery = <T>(
   url: string,
   { enabled = true, params }: FetchQueryOptions = {}
 ) => {
-  // Construir query string si hay params
   const queryString = params
     ? '?' +
       Object.entries(params)
@@ -19,8 +18,8 @@ export const useFetchQuery = <T>(
         .join('&')
     : ''
 
-  return useQuery<T>({
-    queryKey: [key, url, params], // incluir params en el key para refetch correcto
+  return useQuery<ApiResponse<T>>({
+    queryKey: [key, url, params],
     queryFn: () => apiFetch<T>(url + queryString),
     enabled,
   })
@@ -28,7 +27,7 @@ export const useFetchQuery = <T>(
 
 export const usePostMutation = <T>(url: string, keyToInvalidate?: string) => {
   const qc = useQueryClient()
-  return useMutation<T, Error, any>({
+  return useMutation<ApiResponse<T>, Error, any>({
     mutationFn: (payload: any) =>
       apiFetch<T>(url, { method: 'POST', body: JSON.stringify(payload) }),
     onSuccess: () => {
