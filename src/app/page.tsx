@@ -1,15 +1,27 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { UserIcon } from "@heroicons/react/24/outline";
 import { useAuth } from '@/hooks/useAuth'
 
 export default function Home() {
-  const { login } = useAuth()
+  const { login, user } = useAuth()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!user) return;
+
+    if (user.role === "admin") router.replace("/admin");
+    if (user.role === "provider" || user.role === "providerBoat") {
+      router.replace("/provider");
+    }
+  }, [user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -17,12 +29,10 @@ export default function Home() {
     setLoading(true)
     try {
       await login({ email, password })
-      // acá podés redirigir si querés
-      // router.push('/dashboard')
     } catch (err: any) {
       setError(err.message || 'Error en login')
     } finally {
-      setLoading(false)
+      setLoading(false)    
     }
   }
 
@@ -31,8 +41,7 @@ export default function Home() {
       {/* Header */}
       <header className="bg-cyan-400 p-4 h-20 flex justify-between items-center">
         <div className="flex items-center">
-          {/* Logo circular de ejemplo */}
-          <div className="w-10 h-10 bg-cyan-700 rounded-full" />
+          <Image src="/logo_iffree.png" alt="Logo" width={40} height={40} className="h-full ml-4"/>
         </div>
       </header>
 

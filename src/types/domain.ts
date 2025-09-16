@@ -51,7 +51,7 @@ export interface Shift {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
-  service: Service;
+  availablePlaces: number;
 }
 
 // Tipo para el usuario final

@@ -22,7 +22,6 @@ export async function apiFetch<T>(
       ...(options.headers || {}),
       ...headers,
     },
-    credentials: 'include',
   })
 
   let body: any = null
@@ -34,7 +33,7 @@ export async function apiFetch<T>(
 
   if (!res.ok) {
     const errorMsg =
-      body?.error || `API error: ${res.status} ${res.statusText}`
+      body?.message || `API error: ${res.status} ${res.statusText}`
     throw new Error(errorMsg)
   }
 

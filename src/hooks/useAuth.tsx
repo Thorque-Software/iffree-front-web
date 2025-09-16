@@ -1,8 +1,10 @@
 'use client'
 
 import { createContext, useContext, useState, useEffect } from 'react'
-import { apiFetch, ApiResponse } from '@/lib/fetcher'
-import type { User, Credentials, AuthResponse } from '@/types/api'
+import { apiFetch } from '@/lib/fetcher'
+import type { User, Credentials, AuthResponse, JwtPayload} from '@/types/api'
+import { jwtDecode } from "jwt-decode";
+import { useRouter } from "next/navigation";
 
 export type AuthContextType = {
   user: User | null
@@ -17,6 +19,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
   useEffect(() => {
     refreshUser()
@@ -28,30 +31,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       body: JSON.stringify(creds),
     })
     if (!res.success || !res.data) throw new Error(res.error || 'Login failed')
-
     localStorage.setItem('token', res.data.token)
-    setUser(res.data.user)
+    const decoded = jwtDecode<JwtPayload>(res.data.token)
+    const loggedUser: User = {
+      role: decoded.role,
+      token: res.data.token,
+      providerId: decoded.providerId ? String(decoded.providerId) : undefined,
+    }
+    setUser(loggedUser)
+    setLoading(false)
   }
 
+
   const logout = async () => {
-    await apiFetch('/users/logout', { method: 'POST' })
     localStorage.removeItem('token')
     setUser(null)
+    router.push('/')
+    setLoading(false)
   }
 
   const refreshUser = async () => {
-    try {
-      const res = await apiFetch<User>('/auth/me')
-      if (res.success && res.data) {
-        setUser(res.data)
+    const token = localStorage.getItem('token')
+    if(token) {
+        const decoded = jwtDecode<JwtPayload>(token)
+        const currentTime = Math.floor(Date.now() / 1000);
+        if (decoded.exp < currentTime) {
+          logout()
+        } else {
+          const refreshedUser: User = {
+            role: decoded.role,
+            token,
+            providerId: decoded.providerId ? String(decoded.providerId) : undefined,
+          }
+          setUser(refreshedUser)
+        }
       } else {
-        setUser(null)
-      }
-    } catch (e) {
-      setUser(null)
-    } finally {
-      setLoading(false)
+        logout()
     }
+    setLoading(false)
   }
 
   return (

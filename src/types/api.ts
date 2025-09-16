@@ -19,11 +19,22 @@ export type Role = 'admin' | 'provider' | 'finalUser' | 'providerBoat'
 
 
 export type User = {
-id: string
-name: string
-email: string
+providerId?: string
 role: Role
+token: string
 }
 
+export type JwtPayload = {
+id: number
+providerId?: number
+role: Role
+exp: number
+iat: number
+}
 
-export type AuthResponse = { token: string; user: User }
+export type AuthResponse = { 
+success: boolean;
+message: string;
+token: string;
+role: Role;
+}
