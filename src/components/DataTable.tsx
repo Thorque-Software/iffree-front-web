@@ -93,7 +93,7 @@ export function DataTable<T>({
                     key={cell.id}
                     className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
                     >
-                    {['start', 'end'].includes(cell.column.id)
+                    {['start', 'end', 'shift.start'].includes(cell.column.id)
                     ? formatDate(cell.getValue() as string)
                     : flexRender(cell.column.columnDef.cell, cell.getContext())
                     }

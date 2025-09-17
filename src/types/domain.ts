@@ -19,7 +19,7 @@ export interface Provider {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
-  city: City;
+  city?: City;
   mediaId?: number | null;
   media?: unknown | null; // ver
 }
@@ -39,6 +39,41 @@ export interface Service {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+}
+
+type ServiceType = {
+  id: number;
+  name: string;
+  mediaId: number | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
+
+type Media = {
+  id: number;
+  path: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
+
+type MediaService = {
+  id: number;
+  serviceId: number;
+  mediaId: number;
+  order: number;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  media: Media;
+};
+
+export interface ServiceDetail extends Service {
+  avgScore: number | null;
+  provider: Provider;
+  serviceType: ServiceType;
+  mediaService: MediaService[];
 }
 
 type ShiftStatus = 'enabled' | 'suspended' | 'payed';
@@ -72,7 +107,9 @@ export interface FinalUser {
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
+  reservationId?: number;
 }
+
 
 type ReservationStatus = 'to_confirm' | 'to_pay' | 'payed' | 'paying';
 
@@ -87,4 +124,5 @@ export interface Reservation {
   deletedAt: string | null;
   shift: Shift;
   finalUser: FinalUser;
+  attendees: FinalUser[];
 }

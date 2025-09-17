@@ -18,8 +18,22 @@ const columns: ColumnDef<Reservation>[] = [
     },
   },
   { accessorKey: 'shift.service.name', header: 'Servicio' },
-  { accessorKey: 'shift.service.price', header: 'Precio' },
-  { accessorKey: 'status', header: 'Estado' },
+  { accessorKey: 'shift.attendees', header: 'Asistentes', cell: ({ row }) => row.original.attendees.length },
+  { accessorKey: 'shift.service.price', header: 'Monto', cell: ({ row }) => {
+    const price = row.original.shift.service?.price ?? 0;
+    const attendeesCount = row.original.attendees.length;
+    return `$${price * attendeesCount}`;
+  }},
+  { accessorKey: 'status', header: 'Estado', cell: ({ row }) => {
+    const status = row.original.status;
+    switch (status) {
+      case 'to_confirm': return 'Por Confirmar';
+      case 'to_pay': return 'Por Pagar';
+      case 'payed': return 'Pagada';
+      case 'paying': return 'En Proceso de Pago';
+      default: return status;
+    }
+  }},
 ];
 
 const ReservationTable = () => {
@@ -46,7 +60,7 @@ const ReservationTable = () => {
 
   return (
     <div>
-      <h1 className="text-4xl font-semibold mb-6">Proximas salidas</h1>
+      <h1 className="text-4xl font-semibold mb-6">Reservas</h1>
       <DataTable
         columns={columns}
         data={data}
