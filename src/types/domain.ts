@@ -6,7 +6,6 @@ export interface City {
   deletedAt: string | null;
 }
 
-// Tipo para cada proveedor
 export interface Provider {
   id: number;
   fullname: string;
@@ -16,11 +15,13 @@ export interface Provider {
   cityId: number;
   userId: number;
   needConfirmation: boolean;
-  type: string;
+  type: 'default' | 'boat';
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
   city: City;
+  mediaId?: number | null;
+  media?: unknown | null; // ver
 }
 
 export interface Service {
@@ -40,6 +41,8 @@ export interface Service {
   deletedAt: string | null;
 }
 
+type ShiftStatus = 'enabled' | 'suspended' | 'payed';
+
 // Tipo para el turno (shift)
 export interface Shift {
   id: number;
@@ -47,11 +50,12 @@ export interface Shift {
   start: string;
   end: string;
   maxCapacity: number;
-  status: string;
+  status: ShiftStatus;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
   availablePlaces: number;
+  service?: Service;
 }
 
 // Tipo para el usuario final
@@ -70,12 +74,14 @@ export interface FinalUser {
   deletedAt: string | null;
 }
 
+type ReservationStatus = 'to_confirm' | 'to_pay' | 'payed' | 'paying';
+
 // Tipo para cada reserva o item
 export interface Reservation {
   id: number;
   shiftId: number;
   finalUserId: number;
-  status: string;
+  status: ReservationStatus;
   createdAt: string;
   updatedAt: string;
   deletedAt: string | null;
