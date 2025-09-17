@@ -12,9 +12,14 @@ type ShiftsResponse = {
   total: number;
 }
 
-export const getShifts = async () => {
-  const formattedDate = getTodayFormatted()
-  const response = await apiFetch<ShiftsResponse>(`/shifts?fromDate=${formattedDate}`, {
+export const getShifts = async (parameters: { page: number; pageSize: number; search?: string }) => {
+  const params = new URLSearchParams({
+        page: String(parameters.page),
+        pageSize: String(parameters.pageSize),
+        ...(parameters.search ? { search: parameters.search } : {}),
+        fromDate: getTodayFormatted()
+      });
+  const response = await apiFetch<ShiftsResponse>(`/shifts?${params.toString()}`, {
     method: 'GET',
   })
     if (!response.success || !response.data) {
