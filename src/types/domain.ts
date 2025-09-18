@@ -58,7 +58,7 @@ type Media = {
   deletedAt: string | null;
 };
 
-type MediaService = {
+export type MediaService = {
   id: number;
   serviceId: number;
   mediaId: number;

@@ -1,5 +1,5 @@
 import { apiFetch } from "@/lib/fetcher"
-import type { Shift, Reservation, Provider } from "@/types/domain"
+import type { Shift, Reservation, Provider, ServiceDetail} from "@/types/domain"
 import { getTodayFormatted } from "@/utils/utils"
 
 
@@ -22,6 +22,15 @@ type ReservationsResponse = {
 }
 type ProvidersResponse = {
   items: Provider[];
+  pagination: {
+    page: number;
+    pageSize: number;
+  };
+  total: number;
+}
+
+type ServiceDetailResponse = {
+  items: ServiceDetail[];
   pagination: {
     page: number;
     pageSize: number;
@@ -72,6 +81,21 @@ export const getProviders = async (parameters: { page: number; pageSize: number;
   })
     if (!response.success || !response.data) {
         throw new Error(response.error || 'Failed to fetch providers')
+    }
+    return response.data
+}
+
+export const getServiceDetails = async (parameters: { page: number; pageSize: number; search?: string }) => {
+  const params = new URLSearchParams({
+        page: String(parameters.page),
+        pageSize: String(parameters.pageSize),
+        ...(parameters.search ? { search: parameters.search } : {}),
+      });
+  const response = await apiFetch<ServiceDetailResponse>(`/services?${params.toString()}`, {
+    method: 'GET',
+  })
+    if (!response.success || !response.data) {
+        throw new Error(response.error || 'Failed to fetch service details')
     }
     return response.data
 }
