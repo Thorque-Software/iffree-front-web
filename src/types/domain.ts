@@ -21,7 +21,7 @@ export interface Provider {
   deletedAt: string | null;
   city?: City;
   mediaId?: number | null;
-  media?: unknown | null; // ver
+  media?: Media | null; // ver
 }
 
 export interface Service {

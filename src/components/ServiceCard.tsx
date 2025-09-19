@@ -93,16 +93,16 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ serviceDetail }) => {
 
       <div className="flex gap-2 mt-4">
         <Link
-          href={`/admin/services/${serviceDetail.id}/shifts`}
+          href={`/admin/services/shifts/${serviceDetail.id}`}
           className="bg-gray-800 text-white px-2 py-1 rounded text-center flex-1"
         >
-          Turnos
+          Ver
         </Link>
         <Link
-          href={`/admin/services/${serviceDetail.id}/edit`}
+          href={`/admin/services/edit/${serviceDetail.id}`}
           className="border px-2 py-1 rounded text-center flex-1"
         >
-          Gestionar
+          Editar
         </Link>
         <button
           onClick={() => setShowModal(true)}

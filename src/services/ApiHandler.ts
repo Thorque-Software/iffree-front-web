@@ -1,5 +1,5 @@
 import { apiFetch } from "@/lib/fetcher"
-import type { Shift, Reservation, Provider, ServiceDetail} from "@/types/domain"
+import type { Shift, Reservation, Provider, ServiceDetail, City} from "@/types/domain"
 import { getTodayFormatted } from "@/utils/utils"
 
 
@@ -38,12 +38,13 @@ type ServiceDetailResponse = {
   total: number;
 }
 
-export const getShifts = async (parameters: { page: number; pageSize: number; search?: string }) => {
+export const getShifts = async (parameters: { page: number; pageSize: number; search?: string; serviceId?: string }) => {
   const params = new URLSearchParams({
         page: String(parameters.page),
         pageSize: String(parameters.pageSize),
         ...(parameters.search ? { search: parameters.search } : {}),
-        fromDate: getTodayFormatted()
+        fromDate: getTodayFormatted(),
+        ...(parameters.serviceId ? { serviceId: parameters.serviceId } : {}),
       });
   const response = await apiFetch<ShiftsResponse>(`/shifts?${params.toString()}`, {
     method: 'GET',
@@ -85,7 +86,7 @@ export const getProviders = async (parameters: { page: number; pageSize: number;
     return response.data
 }
 
-export const getServiceDetails = async (parameters: { page: number; pageSize: number; search?: string }) => {
+export const getServiceDetails = async (parameters: { page: number; pageSize: number; search?: string}) => {
   const params = new URLSearchParams({
         page: String(parameters.page),
         pageSize: String(parameters.pageSize),
@@ -99,3 +100,53 @@ export const getServiceDetails = async (parameters: { page: number; pageSize: nu
     }
     return response.data
 }
+
+export const getOneServiceDetail = async (serviceId: string) => {
+  const response = await apiFetch<ServiceDetail>(`/services/${serviceId}`, {
+    method: 'GET',
+  })
+    if (!response.success || !response.data) {
+        throw new Error(response.error || 'Failed to fetch service details')
+    }
+    return response.data
+}
+
+type CityResponse = {
+  items: City[];
+  pagination: {
+    page: number;
+    pageSize: number;
+  };
+  total: number;
+}
+export const getCities = async () => {
+  const response = await apiFetch<CityResponse>('/cities', {
+    method: 'GET',
+  })
+    if (!response.success || !response.data) {
+        throw new Error(response.error || 'Failed to fetch cities')
+    }
+    return response.data
+  }
+
+export type ProviderData = {
+  fullname: string;
+  email: string;
+  phoneNumber?: string;
+  cuil: string;
+  cityId: number;
+  type: 'default' | 'boat';
+  needConfirmation: boolean;
+}
+
+export const PostProvider = async (data: ProviderData) => {
+  const response = await apiFetch<Provider>(`/providers`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  })
+    if (!response.success || !response.data) {
+        throw new Error(response.error || 'Failed to create provider')
+    }
+    return response.data
+}
+

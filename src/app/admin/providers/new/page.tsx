@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
+import { getCities,PostProvider, ProviderData} from '@/services/ApiHandler';
+import { City } from '@/types/domain';
 
 const NewProvider = () => {
   const [formData, setFormData] = useState({
@@ -10,18 +12,70 @@ const NewProvider = () => {
     contacto: '',
     cuil: '',
     tipo: '',
-    password: '',
+    confirmar: false,
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [cities, setCities] = useState<City[]>([]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const target = e.target as HTMLInputElement | HTMLSelectElement;
+    const { name, type, value } = target;
+    const checked = (target as HTMLInputElement).checked;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value,
+    }));
+  };
+ 
+
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const data = await getCities();
+        setCities(data.items);
+      } catch (err) {
+        setError('Error al cargar las ciudades');
+      }
+    };
+    fetchCities();
+  }, []);
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Nuevo proveedor:', formData);
-    // acá podrías llamar a tu API
+    setLoading(true);
+    setError(null);
+    setSuccess(false);
+
+    // Mapear los campos del form a lo que espera la API
+    const data: ProviderData = {
+      fullname: formData.nombre,
+      email: formData.email,
+      phoneNumber: formData.contacto || undefined,
+      cuil: formData.cuil,
+      cityId: parseInt(formData.ciudad, 10) || 0, // si tu ciudad es un ID numérico
+      type: formData.tipo !== 'boat' ? 'default' : 'boat', // ajustar según tu lógica
+      needConfirmation: formData.confirmar, // puedes cambiar según necesites
+    };
+
+    try {
+      await PostProvider(data);
+      setSuccess(true);
+      setFormData({
+        nombre: '',
+        ciudad: '',
+        email: '',
+        contacto: '',
+        cuil: '',
+        tipo: '',
+        confirmar: false,
+      });
+    } catch (err: any) {
+      setError(err.message || 'Error al crear el proveedor');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -32,6 +86,9 @@ const NewProvider = () => {
       >
         <h1 className="text-4xl font-bold mb-6">Nuevo proveedor</h1>
 
+        {error && <p className="text-red-600 mb-4">{error}</p>}
+        {success && <p className="text-green-600 mb-4">Proveedor creado con éxito</p>}
+
         <label className="block font-medium mb-1">Nombre y apellido</label>
         <input
           type="text"
@@ -39,16 +96,24 @@ const NewProvider = () => {
           value={formData.nombre}
           onChange={handleChange}
           className="w-full bg-white rounded-md border border-gray-300 p-2 mb-2"
+          required
         />
 
         <label className="block font-medium mb-1">Ciudad</label>
-        <input
-          type="text"
+        <select
           name="ciudad"
           value={formData.ciudad}
           onChange={handleChange}
           className="w-full bg-white rounded-md border border-gray-300 p-2 mb-2"
-        />
+          required
+        >
+          <option value="">Seleccionar ciudad</option>
+          {cities.map((city) => (
+            <option key={city.id} value={city.id}>
+              {city.name}
+            </option>
+          ))}
+        </select>
 
         <label className="block font-medium mb-1">Email</label>
         <input
@@ -57,9 +122,10 @@ const NewProvider = () => {
           value={formData.email}
           onChange={handleChange}
           className="w-full bg-white rounded-md border border-gray-300 p-2 mb-2"
+          required
         />
 
-        <label className="block font-medium mb-1">Contacto</label>
+        <label className="block font-medium mb-1">Telefono</label>
         <input
           type="text"
           name="contacto"
@@ -75,6 +141,7 @@ const NewProvider = () => {
           value={formData.cuil}
           onChange={handleChange}
           className="w-full bg-white rounded-md border border-gray-300 p-2 mb-2"
+          required
         />
 
         <label className="block font-medium mb-1">Tipo</label>
@@ -83,26 +150,28 @@ const NewProvider = () => {
           value={formData.tipo}
           onChange={handleChange}
           className="w-full bg-white rounded-md border border-gray-300 p-2 mb-2"
+          required
         >
           <option value="">Seleccionar</option>
-          <option value="Normal">Normal</option>
-          <option value="Náutico">Náutico</option>
+          <option value="default">Normal</option>
+          <option value="boat">Náutico</option>
         </select>
 
-        <label className="block font-medium mb-1">Contraseña</label>
+        <label className="block font-medium mb-1">Necesita confirmación?</label>
         <input
-          type="password"
-          name="password"
-          value={formData.password}
+          type="checkbox"
+          name="confirmar"
+          checked={formData.confirmar}
           onChange={handleChange}
-          className="w-full bg-white rounded-md border border-gray-300 p-2 mb-2"
+          className="mr-2"
         />
 
         <button
           type="submit"
-          className="w-full bg-blue-600 text-white py-2 rounded-md mt-4 hover:bg-blue-700 transition"
+          disabled={loading}
+          className={`w-full py-2 rounded-md mt-4 text-white ${loading ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'} transition`}
         >
-          Aceptar
+          {loading ? 'Creando...' : 'Aceptar'}
         </button>
       </form>
     </div>

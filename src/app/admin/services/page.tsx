@@ -40,9 +40,13 @@ const ServicesPage = () => {
       </div>
 
       <div className="flex flex-wrap gap-4">
-        {data.map((service) => (
-          <ServiceCard key={service.id} serviceDetail={service} />
-        ))}
+        {loading ? (
+          <p>Cargando servicios...</p>
+        ) : (
+          data.map((service) => (
+            <ServiceCard key={service.id} serviceDetail={service} />
+          ))
+        )}
       </div>
     </div>
   );

@@ -5,6 +5,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import { getProviders } from '@/services/ApiHandler';
 import { Provider } from '@/types/domain';
 import { DataTable } from '@/components/DataTable';
+import Link from 'next/link';
 
 
 const columns: ColumnDef<Provider>[] = [
@@ -41,7 +42,11 @@ const ProviderTable = () => {
 
   return (
     <div>
-      <h1 className="text-4xl font-semibold mb-6">Proximas salidas</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-4xl font-semibold mb-6">Proveedores</h1>
+        <Link href="/admin/providers/new" className="bg-blue-600 text-white px-4 py-2 rounded mr-4">+ Nuevo proveedor</Link>
+      </div>
+      
       <DataTable
         columns={columns}
         data={data}
