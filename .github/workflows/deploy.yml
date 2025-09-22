@@ -63,8 +63,8 @@ jobs:
           rm -f deployment.tar.gz
 
           # Stop and remove existing container
-          docker stop iffree-front && \
-          docker rm iffree-front && \
+          docker stop iffree-front 2>/dev/null || echo 'Container not running' && \
+          docker rm iffree-front 2>/dev/null || echo 'Container not found' && \
 
           # Build the Docker image
           docker build -t iffree-front . && \
