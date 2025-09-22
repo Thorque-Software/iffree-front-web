@@ -25,13 +25,9 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
 
-    - name: Build Docker image
+    - name: Build application
       run: |
-        docker build -t iffree-front .
-
-    - name: Save Docker image
-      run: |
-        docker save iffree-front -o iffree-front.tar
+        npm run build
 
     - name: Setup SSH private key
       env:
@@ -42,33 +38,42 @@ jobs:
 
     - name: Clean directory
       run: |
-        ssh -o StrictHostKeyChecking=no $SERVER_HOST "
-          rm -rf $DEPLOY_PATH/* && \
-          echo '$ENV_FILE_CONTENT' > $DEPLOY_PATH/.env"
+        ssh -o StrictHostKeyChecking=no $SERVER_HOST "rm -rf $DEPLOY_PATH/*"
 
-    - name: Copy files
+    - name: Tar files
       run: |
-        scp -o StrictHostKeyChecking=no iffree-front.tar $SERVER_HOST:$DEPLOY_PATH
+        scp -o StrictHostKeyChecking=no \
+        cp -r .next package.json package-lock.json next.config.js public .env.production deployment/ \
+        tar -czf deployment.tar.gz deployment/ \
+        $SERVER_HOST:$DEPLOY_PATH
 
     - name: Deploy to server
       run: |
-        scp -o StrictHostKeyChecking=no iffree-front.tar $SERVER_HOST:$DEPLOY_PATH
+        scp -o StrictHostKeyChecking=no deployment.tar.gz $SERVER_HOST:$DEPLOY_PATH
         
         ssh -o StrictHostKeyChecking=no $SERVER_HOST:$DEPLOY_PATH "
-          docker load -i /tmp/iffree-front.tar && \
-          docker stop iffree-container && \ 
-          docker rm iffree-container && \
+          tar -xzf deployment.tar.gz --strip-components=1
+          rm -f deployment.tar.gz
+
+          # Stop and remove existing container
+          docker stop iffree-front && \
+          docker rm iffree-front && \
+
+          # Build the Docker image
+          docker build -t iffree-front . && \
+
+          # Run the new container
           docker run -d \
             -p 3000:3000 \
-            -e NEXT_PUBLIC_API_URL=http://18.189.243.17:80 \
-            --name iffree-container \
+            -e NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL }} \
+            --name iffree-front \
             iffree-front
+
+          # Clean up unused images
           docker image prune -f
-          rm -f iffree-front.tar
         "
 
     env:
-      ENV_FILE_CONTENT: |
-        NEXT_PUBLIC_API_URL=http://18.189.243.17:80
       SERVER_HOST: ubuntu@18.189.243.17
       DEPLOY_PATH: /home/ubuntu/iffree-front
+      NEXT_PUBLIC_API_URL: http://18.189.243.17:80
