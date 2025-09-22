@@ -57,9 +57,8 @@ jobs:
 
     - name: Deploy to server
       run: |
-        scp -o StrictHostKeyChecking=no deployment.tar.gz $SERVER_HOST:$DEPLOY_PATH
-        
-        ssh -o StrictHostKeyChecking=no $SERVER_HOST:$DEPLOY_PATH "
+        ssh -o StrictHostKeyChecking=no $SERVER_HOST "
+          cd $DEPLOY_PATH && pwd && \
           tar -xzf deployment.tar.gz --strip-components=1
           rm -f deployment.tar.gz
 
