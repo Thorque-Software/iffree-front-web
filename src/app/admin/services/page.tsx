@@ -31,12 +31,8 @@ const ServicesPage = () => {
   return (
     <div>
       <div className="flex  items-center mb-6">
+        <h1 className="text-4xl font-semibold flex-grow">Servicios</h1>
         <Link href="/admin/services/new" className="bg-blue-600 text-white px-4 py-2 rounded mr-4">+ Nuevo servicio</Link>
-        <input
-          type="text"
-          placeholder="Buscar"
-          className="border rounded px-3 py-2 w-1/3"
-        />
       </div>
 
       <div className="flex flex-wrap gap-4">

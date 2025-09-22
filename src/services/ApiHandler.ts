@@ -1,5 +1,5 @@
 import { apiFetch } from "@/lib/fetcher"
-import type { Shift, Reservation, Provider, ServiceDetail, City} from "@/types/domain"
+import type { Shift, Reservation, Provider, ServiceDetail, City, ServiceType, Service} from "@/types/domain"
 import { getTodayFormatted } from "@/utils/utils"
 
 
@@ -31,6 +31,14 @@ type ProvidersResponse = {
 
 type ServiceDetailResponse = {
   items: ServiceDetail[];
+  pagination: {
+    page: number;
+    pageSize: number;
+  };
+  total: number;
+}
+type ServiceTypeResponse = {
+  items: ServiceType[];
   pagination: {
     page: number;
     pageSize: number;
@@ -123,11 +131,20 @@ export const getCities = async () => {
   const response = await apiFetch<CityResponse>('/cities', {
     method: 'GET',
   })
-    if (!response.success || !response.data) {
-        throw new Error(response.error || 'Failed to fetch cities')
-    }
-    return response.data
+  if (!response.success || !response.data) {
+      throw new Error(response.error || 'Failed to fetch cities')
   }
+  return response.data
+}
+export const getServiceTypes = async () => {
+  const response = await apiFetch<ServiceTypeResponse>('/service-types', {
+    method: 'GET',
+  })
+  if (!response.success || !response.data) {
+      throw new Error(response.error || 'Failed to fetch cities')
+  }
+  return response.data
+}
 
 export type ProviderData = {
   fullname: string;
@@ -150,3 +167,23 @@ export const PostProvider = async (data: ProviderData) => {
     return response.data
 }
 
+export const PostService = async (data: Partial<Service>) => {
+  const response = await apiFetch<ServiceDetail>(`/services`, {
+    method: 'POST',
+    body: JSON.stringify(data)
+  })
+    if (!response.success || !response.data) {
+        throw new Error(response.error || 'Failed to create service')
+    }
+    return response.data
+}
+
+export const DeleteService = async (serviceId: number) => {
+  const response = await apiFetch<null>(`/services/${serviceId}`, {
+    method: 'DELETE',
+  })
+    if (!response.success) {
+        throw new Error(response.error || 'Failed to delete service')
+    }
+    return true
+}

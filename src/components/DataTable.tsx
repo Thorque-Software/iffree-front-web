@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ColumnDef,
   flexRender,
@@ -42,6 +42,17 @@ export function DataTable<T>({
     getCoreRowModel: getCoreRowModel(),
   });
 
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      // Solo dispara si existe onSearch
+      if (onSearch) {
+        onSearch(search.trim());
+      }
+    }, 500);
+
+    return () => clearTimeout(handler);
+  }, [search]); 
+
   return (
     <div className="overflow-x-auto">
       {/* Buscador */}
@@ -52,10 +63,7 @@ export function DataTable<T>({
           className="mb-4 p-2 border border-gray-300 rounded w-1/3"
           value={search}
           disabled={loading}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            onSearch(e.target.value);
-          }}
+          onChange={(e) => setSearch(e.target.value)}
         />
       )}
 

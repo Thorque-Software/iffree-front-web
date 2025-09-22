@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ServiceDetail } from "@/types/domain";
 import { useSignedMedia } from "@/services/useSignedMedia";
 import ConfirmModal from "./ConfirmModal";
+import { DeleteService } from "@/services/ApiHandler";
 
 interface ServiceCardProps {
   serviceDetail: ServiceDetail;
@@ -20,9 +21,13 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ serviceDetail }) => {
   const prevMedia = () =>
     setCurrentMedia((prev) => (prev - 1 >= 0 ? prev - 1 : medias.length - 1));
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     console.log("Eliminando servicio con id:", serviceDetail.id);
-    // acá haces tu fetch o dispatch a API para eliminar
+    const result = await DeleteService(serviceDetail.id);
+    if (result){
+      alert("Servicio eliminado con éxito");
+      window.location.reload();
+    }
     setShowModal(false);
   };
 
@@ -106,7 +111,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ serviceDetail }) => {
         </Link>
         <button
           onClick={() => setShowModal(true)}
-          className="bg-red-600 text-white px-2 py-1 rounded flex-1"
+          className="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded flex-1"
         >
           Borrar
         </button>

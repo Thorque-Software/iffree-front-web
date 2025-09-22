@@ -1,3 +1,5 @@
+import { omit, partial } from "zod/mini";
+
 export interface City {
   id: number;
   name: string;
@@ -41,7 +43,10 @@ export interface Service {
   deletedAt: string | null;
 }
 
-type ServiceType = {
+export interface ServiceToPost extends Omit<Service, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'> {
+}
+
+export type ServiceType = {
   id: number;
   name: string;
   mediaId: number | null;
