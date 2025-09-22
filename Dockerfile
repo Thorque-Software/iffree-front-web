@@ -13,6 +13,8 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
+ENV ENV=prod
+
 # Build the application
 RUN npm run build
 

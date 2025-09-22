@@ -54,6 +54,8 @@ jobs:
           tar -xzf deployment.tar.gz --strip-components=1
           rm -f deployment.tar.gz
 
+          export ENV=prod
+
           # Stop and remove existing container
           docker stop iffree-front 2>/dev/null || echo 'Container not running' && \
           docker rm iffree-front 2>/dev/null || echo 'Container not found' && \
