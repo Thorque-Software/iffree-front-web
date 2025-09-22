@@ -54,12 +54,15 @@ jobs:
     - name: Deploy 
       run: |
         ssh -o StrictHostKeyChecking=no $SERVER_HOST \
-        "cd $DEPLOY_PATH && pwd && \
-         tar -xzf deployment.tar.gz && \
+        "
+         cd $DEPLOY_PATH && pwd && \
+         rm -r ./* && \
+         tar -xzf deployment.tar.gz --strip-components=1 && \
          rm -rf deployment.tar.gz \
         "
 
     env:
-      ENV_FILE_CONTENT: NEXT_PUBLIC_API_URL=http://18.189.243.17:80
+      ENV_FILE_CONTENT: |
+        NEXT_PUBLIC_API_URL=http://18.189.243.17:80
       SERVER_HOST: ubuntu@18.189.243.17
-      DEPLOY_PATH: /home/ubuntu/iffree-back
+      DEPLOY_PATH: /home/ubuntu/iffree-front
