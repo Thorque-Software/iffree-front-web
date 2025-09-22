@@ -3,7 +3,7 @@ name: Deploy Next.js to Server
 
 on:
   push:
-    branches: [ main, dev ]
+    branches: [ main, dev, ci ]
   pull_request:
     branches: [ main ]
 
@@ -25,41 +25,54 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Build application
-      run: npm run build
-
     - name: Create deployment package
       run: |
         mkdir -p deployment
-        cp -r .next public package.json package-lock.json next.config.js* deployment/
+        # Copiar solo lo necesario para producción
+        cp -r Dockerfile package.json package.json tsconfig.json postcss.config.mjs next.config.ts src public deployment/
         tar -czf deployment.tar.gz deployment/
 
     - name: Setup SSH private key
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        run: |
-          ssh-agent -a $SSH_AUTH_SOCK > /dev/null
-          echo "$SSH_PRIVATE_KEY" | ssh-add - >/dev/null
+      run: |
+        ssh-agent -a $SSH_AUTH_SOCK > /dev/null
+        echo "$SSH_PRIVATE_KEY" | ssh-add - >/dev/null
 
-    - name: Copy files
+    - name: Clean directory
+      run: |
+        ssh -o StrictHostKeyChecking=no $SERVER_HOST "rm -rf $DEPLOY_PATH/*"
+
+    - name: Tar files
       run: |
         scp -o StrictHostKeyChecking=no deployment.tar.gz $SERVER_HOST:$DEPLOY_PATH
 
-        ssh -o StrictHostKeyChecking=no $SERVER_HOST \
-        "echo '$ENV_FILE_CONTENT' > $DEPLOY_PATH/.env"
-
-    - name: Deploy 
+    - name: Deploy to server
       run: |
-        ssh -o StrictHostKeyChecking=no $SERVER_HOST \
-        "cd $DEPLOY_PATH && pwd && \
-         tar -xzf deployment.tar.gz && \
-         rm -rf deployment.tar.gz \
+        ssh -o StrictHostKeyChecking=no $SERVER_HOST "
+          cd $DEPLOY_PATH && pwd && \
+          tar -xzf deployment.tar.gz --strip-components=1
+          rm -f deployment.tar.gz
+
+          # Stop and remove existing container
+          docker stop iffree-front 2>/dev/null || echo 'Container not running' && \
+          docker rm iffree-front 2>/dev/null || echo 'Container not found' && \
+
+          # Build the Docker image
+          docker build -t iffree-front . && \
+
+          # Run the new container
+          docker run -d \
+            -p 3000:3000 \
+            --rm \
+            --name front \
+            iffree-front
+
+          # Clean up unused images
+          docker image prune -f
         "
 
     env:
-      ENV_FILE_CONTENT: NEXT_PUBLIC_API_URL=http://18.189.243.17:80
       SERVER_HOST: ubuntu@18.189.243.17
-      DEPLOY_PATH: /home/ubuntu/iffree-back
+      DEPLOY_PATH: /home/ubuntu/iffree-front
+      NEXT_PUBLIC_API_URL: http://18.189.243.17:80/api/v1
