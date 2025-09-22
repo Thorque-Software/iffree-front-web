@@ -25,17 +25,13 @@ jobs:
         node-version: ${{ env.NODE_VERSION }}
         cache: 'npm'
 
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Build application
-      run: npm run build
-
-    - name: Create deployment package
+    - name: Build Docker image
       run: |
-        mkdir -p deployment
-        cp -r .next public package.json package-lock.json next.config.ts deployment/
-        tar -czf deployment.tar.gz deployment/
+        docker build -t iffree-front .
+
+    - name: Save Docker image
+      run: |
+        docker save iffree-front -o iffree-front.tar
 
     - name: Setup SSH private key
       env:
@@ -46,21 +42,29 @@ jobs:
 
     - name: Clean directory
       run: |
-        ssh -o StrictHostKeyChecking=no $SERVER_HOST \
-        "rm -rf $DEPLOY_PATH/* && \
-         echo '$ENV_FILE_CONTENT' > $DEPLOY_PATH/.env"
+        ssh -o StrictHostKeyChecking=no $SERVER_HOST "
+          rm -rf $DEPLOY_PATH/* && \
+          echo '$ENV_FILE_CONTENT' > $DEPLOY_PATH/.env"
 
     - name: Copy files
       run: |
-        scp -o StrictHostKeyChecking=no deployment.tar.gz $SERVER_HOST:$DEPLOY_PATH
+        scp -o StrictHostKeyChecking=no iffree-front.tar $SERVER_HOST:$DEPLOY_PATH
 
-    - name: Deploy 
+    - name: Deploy to server
       run: |
-        ssh -o StrictHostKeyChecking=no $SERVER_HOST \
-        "
-         cd $DEPLOY_PATH && pwd && \
-         tar -xzf deployment.tar.gz --strip-components=1 && \
-         rm -rf deployment.tar.gz \
+        scp -o StrictHostKeyChecking=no iffree-front.tar $SERVER_HOST:$DEPLOY_PATH
+        
+        ssh -o StrictHostKeyChecking=no $SERVER_HOST:$DEPLOY_PATH "
+          docker load -i /tmp/iffree-front.tar && \
+          docker stop iffree-container && \ 
+          docker rm iffree-container && \
+          docker run -d \
+            -p 3000:3000 \
+            -e NEXT_PUBLIC_API_URL=http://18.189.243.17:80 \
+            --name iffree-container \
+            iffree-front
+          docker image prune -f
+          rm -f iffree-front.tar
         "
 
     env:
