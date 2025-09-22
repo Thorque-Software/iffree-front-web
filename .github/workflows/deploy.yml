@@ -47,7 +47,7 @@ jobs:
     - name: Clean directory
       run: |
         ssh -o StrictHostKeyChecking=no $SERVER_HOST \
-        "rm -r $DEPLOY_PATH/* && \
+        "rm -rf $DEPLOY_PATH/* && \
          echo '$ENV_FILE_CONTENT' > $DEPLOY_PATH/.env"
 
     - name: Copy files
