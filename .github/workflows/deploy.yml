@@ -44,19 +44,21 @@ jobs:
         ssh-agent -a $SSH_AUTH_SOCK > /dev/null
         echo "$SSH_PRIVATE_KEY" | ssh-add - >/dev/null
 
+    - name: Clean directory
+      run: |
+        ssh -o StrictHostKeyChecking=no $SERVER_HOST \
+        "rm -r $DEPLOY_PATH/* && \
+         echo '$ENV_FILE_CONTENT' > $DEPLOY_PATH/.env"
+
     - name: Copy files
       run: |
         scp -o StrictHostKeyChecking=no deployment.tar.gz $SERVER_HOST:$DEPLOY_PATH
-
-        ssh -o StrictHostKeyChecking=no $SERVER_HOST \
-        "echo '$ENV_FILE_CONTENT' > $DEPLOY_PATH/.env"
 
     - name: Deploy 
       run: |
         ssh -o StrictHostKeyChecking=no $SERVER_HOST \
         "
          cd $DEPLOY_PATH && pwd && \
-         rm -r ./* && \
          tar -xzf deployment.tar.gz --strip-components=1 && \
          rm -rf deployment.tar.gz \
         "
