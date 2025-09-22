@@ -34,7 +34,7 @@ jobs:
     - name: Create deployment package
       run: |
         mkdir -p deployment
-        cp -r .next public package.json package-lock.json next.config.js* deployment/
+        cp -r .next public package.json package-lock.json next.config.ts deployment/
         tar -czf deployment.tar.gz deployment/
 
     - name: Setup SSH private key
