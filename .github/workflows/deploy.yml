@@ -54,8 +54,6 @@ jobs:
           tar -xzf deployment.tar.gz --strip-components=1
           rm -f deployment.tar.gz
 
-          export ENV=prod
-
           # Stop and remove existing container
           docker stop iffree-front 2>/dev/null || echo 'Container not running' && \
           docker rm iffree-front 2>/dev/null || echo 'Container not found' && \
@@ -66,9 +64,8 @@ jobs:
           # Run the new container
           docker run -d \
             -p 3000:3000 \
-            -e NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL }} \
             --rm \
-            --name iffree-front \
+            --name front \
             iffree-front
 
           # Clean up unused images
