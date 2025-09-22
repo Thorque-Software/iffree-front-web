@@ -37,7 +37,7 @@ jobs:
       run: |
         mkdir -p deployment
         # Copiar solo lo necesario para producción
-        cp -r .next package.json package-lock.json next.config.ts public deployment/
+        cp -r Dockerfile package.json package-lock.json next.config.ts src public deployment/
         tar -czf deployment.tar.gz deployment/
 
     - name: Setup SSH private key
