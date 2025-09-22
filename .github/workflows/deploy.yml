@@ -67,6 +67,7 @@ jobs:
           docker run -d \
             -p 3000:3000 \
             -e NEXT_PUBLIC_API_URL=${{ env.NEXT_PUBLIC_API_URL }} \
+            --rm \
             --name iffree-front \
             iffree-front
 
