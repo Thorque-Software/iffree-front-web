@@ -33,6 +33,13 @@ jobs:
       run: |
         npm run build
 
+    - name: Create deployment package
+      run: |
+        mkdir -p deployment
+        # Copiar solo lo necesario para producción
+        cp -r .next package.json package-lock.json next.config.js public .env.production deployment/
+        tar -czf deployment.tar.gz deployment/
+
     - name: Setup SSH private key
       env:
         SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
@@ -46,10 +53,7 @@ jobs:
 
     - name: Tar files
       run: |
-        scp -o StrictHostKeyChecking=no \
-        cp -r .next package.json package-lock.json next.config.js public .env.production deployment/ \
-        tar -czf deployment.tar.gz deployment/ \
-        $SERVER_HOST:$DEPLOY_PATH
+        scp -o StrictHostKeyChecking=no deployment.tar.gz $SERVER_HOST:$DEPLOY_PATH
 
     - name: Deploy to server
       run: |
