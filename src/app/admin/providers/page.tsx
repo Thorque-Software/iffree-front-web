@@ -15,7 +15,16 @@ const columns: ColumnDef<Provider>[] = [
   { accessorKey: 'cuil', header: 'CUIL' },
   { accessorKey: 'city.name', header: 'Ciudad' },
   { accessorKey: 'type', header: 'Tipo' },
-  { accessorKey: 'needConfirmation', header: 'Confirma reservas', cell: ({ row }) => (row.original.needConfirmation ? 'Sí' : 'No') }
+  { accessorKey: 'needConfirmation', header: 'Confirma reservas', cell: ({ row }) => (row.original.needConfirmation ? 'Sí' : 'No') },
+  {
+    id: "actions",
+    header: "Acciones",
+    cell: ({ row }) => {
+      return (
+        <Link href={`/admin/providers/details/${row.original.id}`} className="bg-green-700 text-white px-4 py-2 rounded mr-4">Detalle</Link>
+      );
+    },
+  },
 ];
 
 const ProviderTable = () => {

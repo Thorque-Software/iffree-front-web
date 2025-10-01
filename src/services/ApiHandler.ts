@@ -78,10 +78,15 @@ export const getServiceDetails = (params: {
   page: number;
   pageSize: number;
   filters?: Record<string, any>;
-}) => fetchList<ServiceDetail>("/services", { ...params, ...params.filters });
-
+}) => {
+  const { filters, ...rest } = params;
+  return fetchList<ServiceDetail>("/services", { ...rest, ...filters });
+};
 export const getOneServiceDetail = (id: string) =>
   fetchOne<ServiceDetail>(`/services/${id}`);
+
+export const getOneProvider = (id: string) =>
+  fetchOne<Provider>(`/providers/${id}`);
 
 // ---------- Cities / Service Types ----------
 export const getCities = () => fetchList<City>("/cities");
@@ -130,6 +135,9 @@ export const PostProvider = (data: ProviderData) =>
 
 export const PostService = (data: Partial<Service>) =>
   post<ServiceDetail>("/services", data);
+
+export const PutProvider = (id: string, data: Partial<ProviderData>) =>
+  put<Provider>(`/providers/${id}`, data);
 
 export const DeleteService = (id: number) => del(`/services/${id}`);
 
