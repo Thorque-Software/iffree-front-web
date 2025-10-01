@@ -1,9 +1,15 @@
 "use client";
 
-import ServiceForm from "@/components/ServiceForm";
 import { Service } from "@/types/domain";
 import { PostService, uploadMedia } from "@/services/ApiHandler";
 import React,{useState} from "react";
+import dynamic from "next/dynamic";
+
+// Dynamically import ServiceForm with SSR disabled
+const ServiceForm = dynamic(() => import("@/components/ServiceForm"), {
+  ssr: false,
+  loading: () => <div>Loading form...</div>
+});
 
 export default function NewServicePage() {
   const [message, setMessage] = useState<string | null>(null);

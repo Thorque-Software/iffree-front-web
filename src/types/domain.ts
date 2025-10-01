@@ -44,8 +44,7 @@ export interface Service {
   serviceType?: ServiceType;
 }
 
-export interface ServiceToPost extends Omit<Service, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'> {
-}
+export type ServiceToPost = Omit<Service, 'id' | 'createdAt' | 'updatedAt' | 'deletedAt'>;
 
 export type ServiceType = {
   id: number;
