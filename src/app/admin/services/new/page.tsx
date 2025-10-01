@@ -2,16 +2,22 @@
 
 import ServiceForm from "@/components/ServiceForm";
 import { Service } from "@/types/domain";
-import { PostService } from "@/services/ApiHandler";
+import { PostService, uploadMedia } from "@/services/ApiHandler";
 import React,{useState} from "react";
 
 export default function NewServicePage() {
   const [message, setMessage] = useState<string | null>(null);
 
-  const handleSubmit = async (values: Partial<Service>, files: File[]) => {
+  const handleSubmit = async (values: Partial<Service>, mediaPayload: FormData | number[] | null) => {
     try {
-      await PostService(values);
+      const response = await PostService(values);
+      const newServiceId = String(response?.id);
+      if (mediaPayload) {
+        mediaPayload instanceof FormData && await uploadMedia(newServiceId, mediaPayload);
+        console.log("Media uploaded", mediaPayload);
+      }
       setMessage("Servicio creado con éxito");
+
     } catch (error) {
       console.error("Error creating service:", error);
       setMessage("Error al crear el servicio");

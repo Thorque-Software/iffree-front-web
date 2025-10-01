@@ -7,7 +7,8 @@ export interface ApiResponse<T> {
 export async function apiFetch<T>(
   url: string,
   options: RequestInit = {},
-  headers?: Record<string, string>
+  headers?: Record<string, string>,
+  noHeaders = false
 ): Promise<ApiResponse<T>> {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
 
@@ -16,12 +17,16 @@ export async function apiFetch<T>(
 
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}${url}`, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(token && !isLogin ? { Authorization: `Bearer ${token}` } : {}),
-      ...(options.headers || {}),
-      ...headers,
-    },
+    ...(noHeaders
+      ? {}
+      : {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && !isLogin ? { Authorization: `Bearer ${token}` } : {}),
+            ...(options.headers || {}),
+            ...headers,
+          },
+        }),
   })
 
   let body: any = null

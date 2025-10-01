@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { Input } from "@headlessui/react";
-import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, useMap, useMapEvents} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 

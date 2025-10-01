@@ -1,20 +1,24 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import { XMarkIcon, ArrowUpTrayIcon } from "@heroicons/react/24/outline";
+import { useEffect, useState } from "react";
 import { Combobox, Input, Textarea } from "@headlessui/react";
-import { Service,Provider,ServiceType } from "@/types/domain";
-import {getProviders, getServiceTypes} from "@/services/ApiHandler";
-import LocationPicker from "./LocationPicker";
+import { Service,Provider,ServiceType,ServiceDetail } from "@/types/domain";
+import {getProviders, getServiceTypes, deleteMedia, uploadOneMedia} from "@/services/ApiHandler";
+import MediaLoad from "./MediaLoad";
+import { useSignedMedia } from "@/services/useSignedMedia";
+import dynamic from "next/dynamic";
+
+const LocationPicker = dynamic(() => import("./LocationPicker"), {
+  ssr: false, // ⛔ evita que se renderice en el servidor
+});
 
 
 interface ServiceFormProps {
-  initialValues?: Partial<Service>;
-  onSubmit: (values: Partial<Service>, files: File[]) => Promise<void>;
+  initialValues?: Partial<ServiceDetail>;
+  onSubmit: (values: Partial<Service>, mediaPayload: FormData | number[] | null) => Promise<void>;
 }
 
 export default function ServiceForm({ initialValues = {}, onSubmit }: ServiceFormProps) {
-  const [files, setFiles] = useState<File[]>([]);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [mediaPayload, setMediaPayload] = useState<FormData | number[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [providers, setProviders] = useState<Provider[]>([]);
   const [serviceTypes, setServiceTypes] = useState<ServiceType[]>([]);
@@ -23,6 +27,8 @@ export default function ServiceForm({ initialValues = {}, onSubmit }: ServiceFor
   const [queryServiceType, setQueryServiceType] = useState("");
   const [queryProvider, setQueryProvider] = useState("");
   const [formData, setFormData] = useState<Partial<Service>>(initialValues);
+  const { urls: signedUrls, loading: signedUrlsLoading } = useSignedMedia(initialValues?.mediaService ?? []);
+  
 
   const filteredServiceTypes =
     queryServiceType === ""
@@ -53,33 +59,35 @@ export default function ServiceForm({ initialValues = {}, onSubmit }: ServiceFor
     fetchData();
   }, []);
 
-  // Handle file input
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const newFiles = Array.from(e.target.files);
-      setFiles((prev) => [...prev, ...newFiles]);
+  useEffect(() => {
+    if (initialValues?.provider) {
+      setSelectedProvider(initialValues.provider);
+      setFormData(prev => ({ ...prev, providerId: initialValues.provider?.id }));
     }
-  };
+    if (initialValues?.serviceType) {
+      setSelectedServiceType(initialValues.serviceType);
+      setFormData(prev => ({ ...prev, serviceTypeId: initialValues.serviceType?.id }));
+    }
+    console.log("cleanup");
+  }, []);
 
-  const handleRemoveFile = (index: number) => {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
-  };
 
   const handleChange = (field: keyof Service, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    await onSubmit(
-      {
-        ...formData,
-        providerId: selectedProvider?.id ,
-        serviceTypeId: selectedServiceType?.id
-      },
-      files
-    );
-  };
+  e.preventDefault();
+  if (formData.forAdultsOnly === undefined ) formData.forAdultsOnly = false;
+  await onSubmit(
+    {
+      ...formData,
+      providerId: selectedProvider?.id,
+      serviceTypeId: selectedServiceType?.id,
+    },
+    mediaPayload
+  );
+};
   if(loading) return <div>Cargando...</div>;
   return (
     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -220,38 +228,19 @@ export default function ServiceForm({ initialValues = {}, onSubmit }: ServiceFor
       </div>
 
       {/* Imágenes */}
-      <div className="col-span-2">
-        <label className="block text-sm mb-1">Imágenes</label>
-        <button
-          type="button"
-          onClick={() => fileInputRef.current?.click()}
-          className="px-3 py-2 bg-blue-500 text-white rounded"
-        >
-          <ArrowUpTrayIcon className="w-4 h-4 inline" /> Subir imágenes
-        </button>
-        <Input
-          type="file"
-          ref={fileInputRef}
-          multiple
-          accept="image/*"
-          onChange={handleFileChange}
-          className="hidden"
-        />
-        <div className="mt-2 space-y-2">
-          {files.map((f, i) => {
-            const url = URL.createObjectURL(f);
-            return (
-              <div key={i} className="flex items-center gap-2 border rounded p-2">
-                <img src={url} alt={f.name} className="w-12 h-12 object-cover rounded" />
-                <span className="truncate">{f.name}</span>
-                <button type="button" onClick={() => handleRemoveFile(i)}>
-                  <XMarkIcon className="w-5 h-5 text-red-500" />
-                </button>
-              </div>
-            );
-          })}
-        </div>
-      </div>
+      {!signedUrlsLoading && <MediaLoad
+        mode={initialValues?.id ? "edit" : "create"}
+        initialMedias={signedUrls}
+        onUpload={async (file) => {
+          const response = await uploadOneMedia(String(initialValues.id!), file);
+          return {id: Math.floor(Math.random() * -1000), url: URL.createObjectURL(file)}; // MOCK
+        }}
+        onDelete={async (mediaId) => {
+          await deleteMedia(String(initialValues.id!), mediaId);
+        }}
+        onChange={(result) => setMediaPayload(result)}
+        label="Subir media"
+      />}
 
       {/* Botón submit */}
       <div className="col-span-2 flex justify-center">

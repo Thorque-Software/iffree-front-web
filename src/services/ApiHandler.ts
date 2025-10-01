@@ -94,20 +94,35 @@ export const getProviders = async (parameters: { page: number; pageSize: number;
     return response.data
 }
 
-export const getServiceDetails = async (parameters: { page: number; pageSize: number; search?: string}) => {
+export const getServiceDetails = async (parameters: {
+  page: number;
+  pageSize: number;
+  filters?: Record<string, any>; // 👈 cualquier filtro opcional
+}) => {
   const params = new URLSearchParams({
-        page: String(parameters.page),
-        pageSize: String(parameters.pageSize),
-        ...(parameters.search ? { search: parameters.search } : {}),
-      });
+    page: String(parameters.page),
+    pageSize: String(parameters.pageSize),
+  });
+
+  if (parameters.filters) {
+    Object.entries(parameters.filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== null && value !== '') {
+        params.append(key, String(value));
+      }
+    });
+  }
+
   const response = await apiFetch<ServiceDetailResponse>(`/services?${params.toString()}`, {
     method: 'GET',
-  })
-    if (!response.success || !response.data) {
-        throw new Error(response.error || 'Failed to fetch service details')
-    }
-    return response.data
-}
+  });
+
+  if (!response.success || !response.data) {
+    throw new Error(response.error || 'Failed to fetch service details');
+  }
+
+  return response.data;
+};
+
 
 export const getOneServiceDetail = async (serviceId: string) => {
   const response = await apiFetch<ServiceDetail>(`/services/${serviceId}`, {
@@ -186,4 +201,61 @@ export const DeleteService = async (serviceId: number) => {
         throw new Error(response.error || 'Failed to delete service')
     }
     return true
+}
+
+export const PutService = async (serviceId: string, data: Partial<Service>) => {
+  const response = await apiFetch<ServiceDetail>(`/services/${serviceId}`, {
+    method: 'PUT',
+    body: JSON.stringify(data)
+  })
+    if (!response.success || !response.data) {
+        throw new Error(response.error || 'Failed to update service')
+    }
+    return response.data
+}
+
+export const uploadMedia = async (serviceId: string, files: FormData) => {
+  const response = await apiFetch(`/services/${serviceId}/images`, {
+    method: 'POST',
+    body: files,
+  }, {}, true);
+  if (!response.success || !response.data) {
+      throw new Error(response.error || 'Failed to upload media')
+  }
+  return response.data;
+}
+
+export const uploadOneMedia = async (serviceId: string, file: File) => {
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const response = await apiFetch(`/services/${serviceId}/images/back`, {
+    method: 'POST',
+    body: formData,
+  }, {}, true);
+  if (!response.success || !response.data) {
+      throw new Error(response.error || 'Failed to upload media')
+  }
+  return response.data;
+}
+
+export const deleteMedia = async (serviceId: string, mediaId: number) => {
+  const response = await apiFetch(`/services/${serviceId}/images/${mediaId}`, {
+    method: 'DELETE',
+  });
+  if (!response.success) {
+      throw new Error(response.error || 'Failed to delete media')
+  }
+  return true;
+}
+
+export const reorderMedia = async (serviceId: string, mediaOrder: number[]) => {
+  const response = await apiFetch(`/services/${serviceId}/images`, {
+    method: 'PUT',
+    body: JSON.stringify({ medias: mediaOrder }),
+  });
+  if (!response.success) {
+      throw new Error(response.error || 'Failed to reorder media')
+  }
+  return true;
 }

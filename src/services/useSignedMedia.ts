@@ -11,7 +11,7 @@ export function useSignedMedia(mediaService: MediaService[]) {
 
   useEffect(() => {
     if (!mediaService || mediaService.length === 0) {
-      setUrls([]);
+      setUrls(prev => prev.length === 0 ? prev : []); 
       setLoading(false);
       return;
     }
