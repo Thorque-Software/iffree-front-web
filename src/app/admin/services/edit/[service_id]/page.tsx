@@ -5,6 +5,8 @@ import { useEffect, useState } from "react";
 import ServiceForm from "@/components/ServiceForm";
 import { Service } from "@/types/domain";
 import { getOneServiceDetail,PutService,reorderMedia } from "@/services/ApiHandler";
+import Swal from "sweetalert2";
+import { useRouter } from "next/navigation";
 
 interface EditServicePageProps {
   params: Promise<{ service_id: string }>;
@@ -12,9 +14,9 @@ interface EditServicePageProps {
 
 export default function EditServicePage({ params }: EditServicePageProps) {
   const { service_id: id } = React.use(params);
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [service, setService] = useState<Service | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchService = async () => {
@@ -37,10 +39,22 @@ export default function EditServicePage({ params }: EditServicePageProps) {
       if (mediaPayload && mediaPayload instanceof Array) {
         await reorderMedia(id, mediaPayload);
       }
-      setMessage("Servicio actualizado con éxito");
+      Swal.fire({
+        icon: 'success',
+        title: 'Servicio actualizado con éxito',
+        showConfirmButton: false,
+        timer: 1500
+      }).then(() => {
+        router.push('/admin/services');
+      });
+      
     } catch (error) {
       console.error("Error updating service:", error);
-      setMessage("Error al actualizar el servicio");
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al actualizar el servicio',
+        text: error instanceof Error ? error.message : 'Ha ocurrido un error inesperado',
+      });
     }
   };
 
@@ -49,7 +63,6 @@ export default function EditServicePage({ params }: EditServicePageProps) {
   return (
     <div className="max-w-4xl mx-auto p-8">
       <h1 className="text-3xl font-bold mb-6">Editar servicio</h1>
-      {message && <p className="mb-4 text-center">{message}</p>}
       <ServiceForm initialValues={service} onSubmit={handleSubmit} />
     </div>
   );

@@ -52,7 +52,7 @@ const ServicesPage = () => {
           title: '¡Eliminado!',
           text: 'El servicio ha sido eliminado con éxito.',
         });
-        window.location.reload();
+        fetchData();
       }
     };
 

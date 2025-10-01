@@ -4,6 +4,7 @@ import { Input } from "@headlessui/react";
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
+import Swal from "sweetalert2";
 
 // Fix Leaflet icons en Next.js
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -74,7 +75,11 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
     if (coords) {
       onChange({ lat: coords[0], lng: coords[1] });
     } else {
-      alert("No se encontró la dirección.");
+      Swal.fire({
+        icon: 'error',
+        title: 'Dirección no encontrada',
+        text: 'Por favor, intenta con otra dirección.',
+      });
     }
   };
 

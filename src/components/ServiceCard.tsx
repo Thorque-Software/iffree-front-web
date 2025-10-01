@@ -4,8 +4,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { ServiceDetail } from "@/types/domain";
 import { useSignedMedia } from "@/services/useSignedMedia";
-import ConfirmModal from "./ConfirmModal";
-import { DeleteService } from "@/services/ApiHandler";
 import Swal from 'sweetalert2'
 
 interface ServiceCardProps {
@@ -16,24 +14,27 @@ interface ServiceCardProps {
 const ServiceCard: React.FC<ServiceCardProps> = ({ serviceDetail, onDelete }) => {
   const { urls: medias, loading } = useSignedMedia(serviceDetail.mediaService);
   const [currentMedia, setCurrentMedia] = useState(0);
-  const [showModal, setShowModal] = useState(false);
 
   const nextMedia = () =>
     setCurrentMedia((prev) => (prev + 1 < medias.length ? prev + 1 : 0));
   const prevMedia = () =>
     setCurrentMedia((prev) => (prev - 1 >= 0 ? prev - 1 : medias.length - 1));
 
-  const handleDelete = async () => {
-    const result = await DeleteService(serviceDetail.id);
-    if (result) {
-      Swal.fire({
-        icon: 'success',
-        title: '¡Eliminado!',
-        text: 'El servicio ha sido eliminado con éxito.',
-      });
-      window.location.reload();
-    }
-    setShowModal(false);
+  const handleDelete = () => {
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: "¡No podrás revertir esto!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, bórralo',
+      cancelButtonText: 'Cancelar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        onDelete(serviceDetail.id);
+      }
+    });
   };
 
   return (
@@ -109,21 +110,13 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ serviceDetail, onDelete }) =>
             Editar
           </Link>
           <button
-            onClick={() => onDelete(serviceDetail.id)}
+            onClick={handleDelete}
             className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
           >
             Borrar
           </button>
         </div>
       </div>
-
-      {showModal && (
-        <ConfirmModal
-          title="¿Seguro que quieres eliminar este servicio?"
-          onConfirm={handleDelete}
-          onCancel={() => setShowModal(false)}
-        />
-      )}
     </div>
   );
 };

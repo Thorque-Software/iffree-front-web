@@ -3,8 +3,11 @@
 import React, { useState,useEffect } from 'react';
 import { getCities,PostProvider, ProviderData} from '@/services/ApiHandler';
 import { City } from '@/types/domain';
+import Swal from 'sweetalert2';
+import { useRouter } from 'next/navigation';
 
 const NewProvider = () => {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     nombre: '',
     ciudad: '',
@@ -17,7 +20,6 @@ const NewProvider = () => {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState(false);
   const [cities, setCities] = useState<City[]>([]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -46,7 +48,6 @@ const NewProvider = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setSuccess(false);
 
     // Mapear los campos del form a lo que espera la API
     const data: ProviderData = {
@@ -61,7 +62,6 @@ const NewProvider = () => {
 
     try {
       await PostProvider(data);
-      setSuccess(true);
       setFormData({
         nombre: '',
         ciudad: '',
@@ -71,8 +71,20 @@ const NewProvider = () => {
         tipo: '',
         confirmar: false,
       });
-    } catch (err: any) {
-      setError(err.message || 'Error al crear el proveedor');
+      Swal.fire({
+        icon: 'success',
+        title: 'Proveedor creado con éxito',
+        showConfirmButton: false,
+        timer: 1500
+      }).then(() => {
+        router.push('/admin/providers');
+      });
+    } catch (error: any) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error al crear el servicio',
+        text: error instanceof Error ? error.message : 'Ha ocurrido un error inesperado',
+      });
     } finally {
       setLoading(false);
     }
@@ -87,7 +99,6 @@ const NewProvider = () => {
         <h1 className="text-4xl font-bold mb-6">Nuevo proveedor</h1>
 
         {error && <p className="text-red-600 mb-4">{error}</p>}
-        {success && <p className="text-green-600 mb-4">Proveedor creado con éxito</p>}
 
         <label className="block font-medium mb-1">Nombre y apellido</label>
         <input
