@@ -1,261 +1,160 @@
-import { apiFetch } from "@/lib/fetcher"
-import type { Shift, Reservation, Provider, ServiceDetail, City, ServiceType, Service} from "@/types/domain"
-import { getTodayFormatted } from "@/utils/utils"
+import { apiFetch } from "@/lib/fetcher";
+import type {
+  Shift,
+  Reservation,
+  Provider,
+  ServiceDetail,
+  City,
+  ServiceType,
+  Service,
+} from "@/types/domain";
+import { getTodayFormatted } from "@/utils/utils";
 
-
-type ShiftsResponse = {
-  items: Shift[];
-  pagination: {
-    page: number;
-    pageSize: number;
-  };
+// ---------- Tipos Genéricos ----------
+type PaginatedResponse<T> = {
+  items: T[];
+  pagination: { page: number; pageSize: number };
   total: number;
-}
+};
 
-type ReservationsResponse = {
-  items: Reservation[];
-  pagination: {
-    page: number;
-    pageSize: number;
-  };
-  total: number;
-}
-type ProvidersResponse = {
-  items: Provider[];
-  pagination: {
-    page: number;
-    pageSize: number;
-  };
-  total: number;
-}
+// ---------- Utilidad para GET con Query ----------
+const buildParams = (params: Record<string, any>) =>
+  new URLSearchParams(
+    Object.entries(params).reduce((acc, [k, v]) => {
+      if (v !== undefined && v !== null && v !== "") acc[k] = String(v);
+      return acc;
+    }, {} as Record<string, string>)
+  ).toString();
 
-type ServiceDetailResponse = {
-  items: ServiceDetail[];
-  pagination: {
-    page: number;
-    pageSize: number;
-  };
-  total: number;
-}
-type ServiceTypeResponse = {
-  items: ServiceType[];
-  pagination: {
-    page: number;
-    pageSize: number;
-  };
-  total: number;
-}
-
-export const getShifts = async (parameters: { page: number; pageSize: number; search?: string; serviceId?: string }) => {
-  const params = new URLSearchParams({
-        page: String(parameters.page),
-        pageSize: String(parameters.pageSize),
-        ...(parameters.search ? { search: parameters.search } : {}),
-        fromDate: getTodayFormatted(),
-        ...(parameters.serviceId ? { serviceId: parameters.serviceId } : {}),
-      });
-  const response = await apiFetch<ShiftsResponse>(`/shifts?${params.toString()}`, {
-    method: 'GET',
-  })
-    if (!response.success || !response.data) {
-        throw new Error(response.error || 'Failed to fetch shifts')
-    }
-    return response.data
-}
-
-export const getReservations = async (parameters: { page: number; pageSize: number; search?: string }) => {
-  const params = new URLSearchParams({
-        page: String(parameters.page),
-        pageSize: String(parameters.pageSize),
-        ...(parameters.search ? { search: parameters.search } : {}),
-      });
-  const response = await apiFetch<ReservationsResponse>(`/reservations?${params.toString()}`, {
-    method: 'GET',
-  })
-    if (!response.success || !response.data) {
-        throw new Error(response.error || 'Failed to fetch reservations')
-    }
-    return response.data
-}
-
-export const getProviders = async (parameters: { page: number; pageSize: number; search?: string }) => {
-  const params = new URLSearchParams({
-        page: String(parameters.page),
-        pageSize: String(parameters.pageSize),
-        ...(parameters.search ? { search: parameters.search } : {}),
-        fromDate: getTodayFormatted()
-      });
-  const response = await apiFetch<ProvidersResponse>(`/providers?${params.toString()}`, {
-    method: 'GET',
-  })
-    if (!response.success || !response.data) {
-        throw new Error(response.error || 'Failed to fetch providers')
-    }
-    return response.data
-}
-
-export const getServiceDetails = async (parameters: {
-  page: number;
-  pageSize: number;
-  filters?: Record<string, any>; // 👈 cualquier filtro opcional
-}) => {
-  const params = new URLSearchParams({
-    page: String(parameters.page),
-    pageSize: String(parameters.pageSize),
+const fetchList = async <T>(
+  url: string,
+  params?: Record<string, any>
+): Promise<PaginatedResponse<T>> => {
+  const query = params ? `?${buildParams(params)}` : "";
+  const response = await apiFetch<PaginatedResponse<T>>(`${url}${query}`, {
+    method: "GET",
   });
-
-  if (parameters.filters) {
-    Object.entries(parameters.filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== '') {
-        params.append(key, String(value));
-      }
-    });
-  }
-
-  const response = await apiFetch<ServiceDetailResponse>(`/services?${params.toString()}`, {
-    method: 'GET',
-  });
-
-  if (!response.success || !response.data) {
-    throw new Error(response.error || 'Failed to fetch service details');
-  }
-
+  if (!response.success || !response.data)
+    throw new Error(response.error || `Failed to fetch ${url}`);
   return response.data;
 };
 
+const fetchOne = async <T>(url: string): Promise<T> => {
+  const response = await apiFetch<T>(url, { method: "GET" });
+  if (!response.success || !response.data)
+    throw new Error(response.error || `Failed to fetch ${url}`);
+  return response.data;
+};
 
-export const getOneServiceDetail = async (serviceId: string) => {
-  const response = await apiFetch<ServiceDetail>(`/services/${serviceId}`, {
-    method: 'GET',
-  })
-    if (!response.success || !response.data) {
-        throw new Error(response.error || 'Failed to fetch service details')
-    }
-    return response.data
-}
+// ---------- Shifts / Reservations / Providers / Services ----------
+export const getShifts = (params: {
+  page: number;
+  pageSize: number;
+  search?: string;
+  serviceId?: string;
+}) =>
+  fetchList<Shift>("/shifts", {
+    ...params,
+    fromDate: getTodayFormatted(),
+  });
 
-type CityResponse = {
-  items: City[];
-  pagination: {
-    page: number;
-    pageSize: number;
-  };
-  total: number;
-}
-export const getCities = async () => {
-  const response = await apiFetch<CityResponse>('/cities', {
-    method: 'GET',
-  })
-  if (!response.success || !response.data) {
-      throw new Error(response.error || 'Failed to fetch cities')
-  }
-  return response.data
-}
-export const getServiceTypes = async () => {
-  const response = await apiFetch<ServiceTypeResponse>('/service-types', {
-    method: 'GET',
-  })
-  if (!response.success || !response.data) {
-      throw new Error(response.error || 'Failed to fetch cities')
-  }
-  return response.data
-}
+export const getReservations = (params: {
+  page: number;
+  pageSize: number;
+  search?: string;
+}) => fetchList<Reservation>("/reservations", params);
 
+export const getProviders = (params: {
+  page: number;
+  pageSize: number;
+  search?: string;
+}) =>
+  fetchList<Provider>("/providers", {
+    ...params,
+    fromDate: getTodayFormatted(),
+  });
+
+export const getServiceDetails = (params: {
+  page: number;
+  pageSize: number;
+  filters?: Record<string, any>;
+}) => fetchList<ServiceDetail>("/services", { ...params, ...params.filters });
+
+export const getOneServiceDetail = (id: string) =>
+  fetchOne<ServiceDetail>(`/services/${id}`);
+
+// ---------- Cities / Service Types ----------
+export const getCities = () => fetchList<City>("/cities");
+export const getServiceTypes = () => fetchList<ServiceType>("/service-types");
+
+// ---------- CRUD Provider / Services ----------
 export type ProviderData = {
   fullname: string;
   email: string;
   phoneNumber?: string;
   cuil: string;
   cityId: number;
-  type: 'default' | 'boat';
+  type: "default" | "boat";
   needConfirmation: boolean;
-}
+};
 
-export const PostProvider = async (data: ProviderData) => {
-  const response = await apiFetch<Provider>(`/providers`, {
-    method: 'POST',
-    body: JSON.stringify(data)
-  })
-    if (!response.success || !response.data) {
-        throw new Error(response.error || 'Failed to create provider')
-    }
-    return response.data
-}
+const post = async <T>(url: string, body: any) => {
+  const response = await apiFetch<T>(url, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
+  if (!response.success || !response.data)
+    throw new Error(response.error || `Failed to create ${url}`);
+  return response.data;
+};
 
-export const PostService = async (data: Partial<Service>) => {
-  const response = await apiFetch<ServiceDetail>(`/services`, {
-    method: 'POST',
-    body: JSON.stringify(data)
-  })
-    if (!response.success || !response.data) {
-        throw new Error(response.error || 'Failed to create service')
-    }
-    return response.data
-}
+const put = async <T>(url: string, body: any) => {
+  const response = await apiFetch<T>(url, {
+    method: "PUT",
+    body: JSON.stringify(body),
+  });
+  if (!response.success || !response.data)
+    throw new Error(response.error || `Failed to update ${url}`);
+  return response.data;
+};
 
-export const DeleteService = async (serviceId: number) => {
-  const response = await apiFetch<null>(`/services/${serviceId}`, {
-    method: 'DELETE',
-  })
-    if (!response.success) {
-        throw new Error(response.error || 'Failed to delete service')
-    }
-    return true
-}
+const del = async (url: string) => {
+  const response = await apiFetch<null>(url, { method: "DELETE" });
+  if (!response.success)
+    throw new Error(response.error || `Failed to delete ${url}`);
+  return true;
+};
 
-export const PutService = async (serviceId: string, data: Partial<Service>) => {
-  const response = await apiFetch<ServiceDetail>(`/services/${serviceId}`, {
-    method: 'PUT',
-    body: JSON.stringify(data)
-  })
-    if (!response.success || !response.data) {
-        throw new Error(response.error || 'Failed to update service')
-    }
-    return response.data
-}
+export const PostProvider = (data: ProviderData) =>
+  post<Provider>("/providers", data);
 
+export const PostService = (data: Partial<Service>) =>
+  post<ServiceDetail>("/services", data);
+
+export const DeleteService = (id: number) => del(`/services/${id}`);
+
+export const PutService = (id: string, data: Partial<Service>) =>
+  put<ServiceDetail>(`/services/${id}`, data);
+
+// ---------- Media ----------
 export const uploadMedia = async (serviceId: string, files: FormData) => {
   const response = await apiFetch(`/services/${serviceId}/images`, {
-    method: 'POST',
+    method: "POST",
     body: files,
   }, {}, true);
-  if (!response.success || !response.data) {
-      throw new Error(response.error || 'Failed to upload media')
-  }
+  if (!response.success || !response.data)
+    throw new Error(response.error || "Failed to upload media");
   return response.data;
-}
+};
 
 export const uploadOneMedia = async (serviceId: string, file: File) => {
   const formData = new FormData();
-  formData.append('image', file);
+  formData.append("image", file);
+  return uploadMedia(`${serviceId}/images/back`, formData);
+};
 
-  const response = await apiFetch(`/services/${serviceId}/images/back`, {
-    method: 'POST',
-    body: formData,
-  }, {}, true);
-  if (!response.success || !response.data) {
-      throw new Error(response.error || 'Failed to upload media')
-  }
-  return response.data;
-}
+export const deleteMedia = (serviceId: string, mediaId: number) =>
+  del(`/services/${serviceId}/images/${mediaId}`);
 
-export const deleteMedia = async (serviceId: string, mediaId: number) => {
-  const response = await apiFetch(`/services/${serviceId}/images/${mediaId}`, {
-    method: 'DELETE',
-  });
-  if (!response.success) {
-      throw new Error(response.error || 'Failed to delete media')
-  }
-  return true;
-}
-
-export const reorderMedia = async (serviceId: string, mediaOrder: number[]) => {
-  const response = await apiFetch(`/services/${serviceId}/images`, {
-    method: 'PUT',
-    body: JSON.stringify({ medias: mediaOrder }),
-  });
-  if (!response.success) {
-      throw new Error(response.error || 'Failed to reorder media')
-  }
-  return true;
-}
+export const reorderMedia = (serviceId: string, mediaOrder: number[]) =>
+  put(`/services/${serviceId}/images`, { medias: mediaOrder });
