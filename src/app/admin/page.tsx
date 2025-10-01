@@ -5,11 +5,12 @@ import { ColumnDef } from '@tanstack/react-table';
 import { getShifts } from '@/services/ApiHandler';
 import { Shift } from '@/types/domain';
 import { DataTable } from '@/components/DataTable';
+import { formatDate } from '@/utils/utils';
 
 
 const columns: ColumnDef<Shift>[] = [
-  { accessorKey: 'start', header: 'Inicio' },
-  { accessorKey: 'end', header: 'Fin' },
+  { accessorKey: 'start', header: 'Inicio', cell: ({ row }) => formatDate(row.original.start) },
+  { accessorKey: 'end', header: 'Fin', cell: ({ row }) => formatDate(row.original.end) },
   { accessorKey: 'maxCapacity', header: 'Capacidad Máxima' },
   { accessorKey: 'status', header: 'Estado' },
   { accessorKey: 'availablePlaces', header: 'Lugares Disponibles' },

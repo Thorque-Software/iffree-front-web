@@ -5,10 +5,11 @@ import { ColumnDef } from '@tanstack/react-table';
 import { getReservations } from '@/services/ApiHandler';
 import { Reservation } from '@/types/domain';
 import { DataTable } from '@/components/DataTable';
+import { formatDate } from '@/utils/utils';
 
 
 const columns: ColumnDef<Reservation>[] = [
-  { accessorKey: 'shift.start', header: 'Inicio' },
+  { accessorKey: 'shift.start', header: 'Inicio', cell: ({ row }) => formatDate(row.original.shift.start) },
   {
     id: 'cliente',
     header: 'Cliente',
