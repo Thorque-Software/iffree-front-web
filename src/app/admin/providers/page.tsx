@@ -67,9 +67,6 @@ const ProviderTable = () => {
     }
   };
 
-  useEffect(() => {
-    fetchData(pagination.page);
-  }, []);
 
   return (
     <div>

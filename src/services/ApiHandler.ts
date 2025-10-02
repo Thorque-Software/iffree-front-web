@@ -62,7 +62,11 @@ export const getReservations = (params: {
   page: number;
   pageSize: number;
   search?: string;
-}) => fetchList<Reservation>("/reservations", params);
+  filters?: Record<string, any>;
+}) => {
+  const { filters, ...rest } = params;
+  return fetchList<Reservation>("/reservations", { ...rest, ...filters });
+}
 
 export const getProviders = (params: {
   page: number;

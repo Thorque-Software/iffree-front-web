@@ -42,11 +42,16 @@ const ReservationTable = () => {
   const [pagination, setPagination] = useState({ page: 1, pageSize: 5 });
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState({});
+  const [search, setSearch] = useState('');
 
-  const fetchData = async (page: number, search?: string) => {
+
+  const fetchData = async (page: number, searchParams?: string, filtersParams?: Record<string, any>) => {
     setLoading(true);
     try {
-      const res = await getReservations({ page, pageSize: pagination.pageSize, search });
+      const sear = searchParams || search;
+      const filt = filtersParams || filters;
+      const res = await getReservations({ page, pageSize: pagination.pageSize, search: sear, filters: filt });
       setData(res.items);
       setPagination(res.pagination);
       setTotal(res.total);
@@ -54,10 +59,6 @@ const ReservationTable = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchData(pagination.page);
-  }, [pagination.page]);
 
   return (
     <div>
@@ -68,8 +69,24 @@ const ReservationTable = () => {
         total={total}
         pagination={pagination}
         loading={loading}
-        onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))}
-        onSearch={(term) => fetchData(1, term)}
+        onPageChange={(page) => fetchData(page)}
+        onSearch={(term) => {
+          fetchData(1, term);
+          setSearch(term);
+        }}
+        filters={filters}
+        onFilterChange={(newFilters) => {
+          setFilters(newFilters);
+          fetchData(1, "", newFilters);
+        }}
+        filterConfig={[
+          { key: 'status', label: 'Estado', type: 'select', options: [
+            { label: 'Por Confirmar', value: 'to_confirm' },
+            { label: 'Por Pagar', value: 'to_pay' },
+            { label: 'Pagada', value: 'payed' },
+            { label: 'En Proceso de Pago', value: 'paying' },
+          ] },
+        ]}
       />
     </div>
   );
