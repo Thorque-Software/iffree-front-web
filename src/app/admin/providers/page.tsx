@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
-import { getProviders } from '@/services/ApiHandler';
-import { Provider } from '@/types/domain';
+import { getCities, getProviders } from '@/services/ApiHandler';
+import { Provider,City } from '@/types/domain';
 import { DataTable } from '@/components/DataTable';
 import Link from 'next/link';
+import { set } from 'zod';
 
 
 const columns: ColumnDef<Provider>[] = [
@@ -14,7 +15,7 @@ const columns: ColumnDef<Provider>[] = [
   { accessorKey: 'phoneNumber', header: 'Teléfono', cell: ({ row }) => (row.original.phoneNumber || 'N/A') },
   { accessorKey: 'cuil', header: 'CUIL' },
   { accessorKey: 'city.name', header: 'Ciudad' },
-  { accessorKey: 'type', header: 'Tipo' },
+  { accessorKey: 'type', header: 'Tipo' , cell: ({ row }) => (row.original.type === 'default' ? 'Normal' : 'Náutico')},
   { accessorKey: 'needConfirmation', header: 'Confirma reservas', cell: ({ row }) => (row.original.needConfirmation ? 'Sí' : 'No') },
   {
     id: "actions",
@@ -32,11 +33,33 @@ const ProviderTable = () => {
   const [pagination, setPagination] = useState({ page: 1, pageSize: 5 });
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [filters, setFilters] = useState({});
+  const [search, setSearch] = useState('');
+  const [cities, setCities] = useState<{ label: string; value: number }[]>([]);
 
-  const fetchData = async (page: number, search?: string) => {
+  const fetchCities = async () => {
+    try {
+      const res = await getCities();
+      const labeledCities = res.items.map(city => ({
+        label: city.name,
+        value: city.id
+      }));
+      setCities(labeledCities);
+    } catch (error) {
+      console.error("Error fetching cities:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCities();
+  }, []);
+
+  const fetchData = async (page: number, searchParams?: string, filtersParams?: Record<string, any>) => {
     setLoading(true);
     try {
-      const res = await getProviders({ page, pageSize: pagination.pageSize, search });
+      const sear = searchParams || search;
+      const filt = filtersParams || filters;
+      const res = await getProviders({ page, pageSize: pagination.pageSize, search: sear, filters: filt });
       setData(res.items);
       setPagination(res.pagination);
       setTotal(res.total);
@@ -47,7 +70,7 @@ const ProviderTable = () => {
 
   useEffect(() => {
     fetchData(pagination.page);
-  }, [pagination.page]);
+  }, []);
 
   return (
     <div>
@@ -62,8 +85,30 @@ const ProviderTable = () => {
         total={total}
         pagination={pagination}
         loading={loading}
-        onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))}
-        onSearch={(term) => fetchData(1, term)}
+        onPageChange={(page) => fetchData(page)}
+        onSearch={(term) => {
+          fetchData(1, term);
+          setSearch(term);
+        }}
+        filters={filters}
+        onFilterChange={(newFilters) => {
+          setFilters(newFilters);
+          fetchData(1, "", newFilters);
+        }}
+        filterConfig={[
+          { key: 'type', label: 'Tipo', type: 'select', options: [
+            { label: 'Normal', value: 'default' },
+            { label: 'Náutico', value: 'boat' },
+          ]
+          },
+          { key: 'needConfirmation', label: 'Confirma reservas', type: 'select', options: [
+            { label: 'Sí', value: true },
+            { label: 'No', value: false },
+          ]
+          },
+          { key: 'cityId', label: 'Ciudad', type: 'select', options: cities
+          },
+        ]}
       />
     </div>
   );

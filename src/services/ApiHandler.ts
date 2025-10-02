@@ -68,12 +68,11 @@ export const getProviders = (params: {
   page: number;
   pageSize: number;
   search?: string;
-}) =>
-  fetchList<Provider>("/providers", {
-    ...params,
-    fromDate: getTodayFormatted(),
-  });
-
+  filters?: Record<string, any>;
+}) =>{
+  const { filters, ...rest } = params;
+  return fetchList<Provider>("/providers", { ...rest, ...filters });
+};
 export const getServiceDetails = (params: {
   page: number;
   pageSize: number;
@@ -89,7 +88,7 @@ export const getOneProvider = (id: string) =>
   fetchOne<Provider>(`/providers/${id}`);
 
 // ---------- Cities / Service Types ----------
-export const getCities = () => fetchList<City>("/cities");
+export const getCities = () => fetchList<City>("/cities",{ page: 1, pageSize: 100 });
 export const getServiceTypes = () => fetchList<ServiceType>("/service-types");
 
 // ---------- CRUD Provider / Services ----------
