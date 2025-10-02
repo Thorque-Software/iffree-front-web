@@ -11,6 +11,14 @@ const LocationPicker = dynamic(() => import("./LocationPicker"), {
   ssr: false, // ⛔ evita que se renderice en el servidor
 });
 
+type UploadOneImageResponse = {
+  id: number;
+  path: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
+
 
 interface ServiceFormProps {
   initialValues?: Partial<ServiceDetail>;
@@ -232,8 +240,9 @@ export default function ServiceForm({ initialValues = {}, onSubmit }: ServiceFor
         mode={initialValues?.id ? "edit" : "create"}
         initialMedias={signedUrls}
         onUpload={async (file) => {
-          const response = await uploadOneMedia(String(initialValues.id!), file);
-          return {id: Math.floor(Math.random() * -1000), url: URL.createObjectURL(file)}; // MOCK
+          const response = await uploadOneMedia(String(initialValues.id!), file) as UploadOneImageResponse;
+          const id_media = response?.id;
+          return {id: id_media, url: URL.createObjectURL(file)}; // MOCK
         }}
         onDelete={async (mediaId) => {
           await deleteMedia(String(initialValues.id!), mediaId);
