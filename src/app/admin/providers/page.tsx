@@ -3,10 +3,9 @@
 import { useEffect, useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
 import { getCities, getProviders } from '@/services/ApiHandler';
-import { Provider,City } from '@/types/domain';
+import { Provider } from '@/types/domain';
 import { DataTable } from '@/components/DataTable';
 import Link from 'next/link';
-import { set } from 'zod';
 
 
 const columns: ColumnDef<Provider>[] = [
