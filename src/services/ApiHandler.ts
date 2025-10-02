@@ -145,8 +145,8 @@ export const PutService = (id: string, data: Partial<Service>) =>
   put<ServiceDetail>(`/services/${id}`, data);
 
 // ---------- Media ----------
-export const uploadMedia = async (serviceId: string, files: FormData) => {
-  const response = await apiFetch(`/services/${serviceId}/images`, {
+export const handleMedia = async (route: string, files: FormData) => {
+  const response = await apiFetch(route, {
     method: "POST",
     body: files,
   }, {}, true);
@@ -155,10 +155,14 @@ export const uploadMedia = async (serviceId: string, files: FormData) => {
   return response.data;
 };
 
+export const uploadMedia = async (serviceId: string, files: FormData) => {
+  return handleMedia(`/services/${serviceId}/images`, files);
+};
+
 export const uploadOneMedia = async (serviceId: string, file: File) => {
   const formData = new FormData();
-  formData.append("image", file);
-  return uploadMedia(`${serviceId}/images/back`, formData);
+  formData.append("image", file, file.name);
+  return handleMedia(`/services/${serviceId}/images/back`, formData);
 };
 
 export const deleteMedia = (serviceId: string, mediaId: number) =>
