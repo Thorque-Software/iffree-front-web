@@ -75,4 +75,4 @@ jobs:
     env:
       SERVER_HOST: ubuntu@18.189.243.17
       DEPLOY_PATH: /home/ubuntu/iffree-front
-      NEXT_PUBLIC_API_URL: http://18.189.243.17:80/api/v1
+      NEXT_PUBLIC_API_URL: https://iffree.thorque.com.ar/api/v1
