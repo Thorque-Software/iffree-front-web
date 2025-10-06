@@ -162,6 +162,9 @@ export default function ServiceForm({ initialValues = {}, onSubmit }: ServiceFor
               displayValue={(c: ServiceType) => c?.name}
               onChange={(e) => setQueryServiceType(e.target.value)}
             />
+            <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2" onClick={() => setQueryServiceType("")}>
+              ▾
+            </Combobox.Button>
             <Combobox.Options className="absolute z-450 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white shadow-lg">
               {filteredServiceTypes.map((c) => (
                 <Combobox.Option
@@ -206,6 +209,9 @@ export default function ServiceForm({ initialValues = {}, onSubmit }: ServiceFor
               displayValue={(p: Provider) => p?.fullname}
               onChange={(e) => setQueryProvider(e.target.value)}
             />
+            <Combobox.Button className="absolute inset-y-0 right-0 flex items-center pr-2" onClick={() => setQueryProvider("")}>
+              ▾
+            </Combobox.Button>
             <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md border bg-white shadow-lg">
               {filteredProviders.map((p) => (
                 <Combobox.Option

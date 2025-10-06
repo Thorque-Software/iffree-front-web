@@ -130,25 +130,6 @@ const ServicesPage = () => {
             placeholder="Precio menor a"
           />
 
-          {/* 🔁 Paginación */}
-          <div className="flex justify-between mt-4">
-            <button
-              disabled={pagination.page <= 1 || loading}
-              onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
-              className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-            >
-              ◀
-            </button>
-            <span>Página {pagination.page}</span>
-            <button
-              disabled={data.length < pagination.pageSize || loading}
-              onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
-              className="px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
-            >
-              ▶
-            </button>
-          </div>
-
           <button
             onClick={() => setFilters({ name: "", providerId: "", serviceTypeId: "", forAdultsOnly: "", cheaperThan: "" })}
             className="text-sm text-gray-500 hover:underline mt-2"
@@ -164,6 +145,23 @@ const ServicesPage = () => {
         {loading ? <p>Cargando...</p> : data.map((service) => (
           <ServiceCard key={service.id} serviceDetail={service} onDelete={handleDelete} />
         ))}
+        <div className="flex justify-center mt-4">
+            <button
+              disabled={pagination.page <= 1 || loading}
+              onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
+              className="mr-3 px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+            >
+              ◀
+            </button>
+            <span>Página {pagination.page}</span>
+            <button
+              disabled={data.length < pagination.pageSize || loading}
+              onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
+              className="ml-3 px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
+            >
+              ▶
+            </button>
+          </div>
       </div>
     </div>
   );
