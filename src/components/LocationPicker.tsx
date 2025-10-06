@@ -58,13 +58,14 @@ interface LocationPickerProps {
 
 export default function LocationPicker({ value, onChange }: LocationPickerProps) {
   const [search, setSearch] = useState(""); // solo para buscar
-  const [displayAddress, setDisplayAddress] = useState("");
 
   // Si hay lat/lng iniciales, hacer reverse para mostrar dirección en input
   useEffect(() => {
     if (value.lat && value.lng) {
       reverseGeocode(value.lat, value.lng).then((addr) => {
-        if (addr) setDisplayAddress(addr);
+        if (addr) {
+          setSearch(addr);
+        }
       });
     }
   }, [value.lat, value.lng]);
@@ -86,7 +87,9 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
   const handleMapClick = (lat: number, lng: number) => {
     onChange({ lat, lng });
     reverseGeocode(lat, lng).then((addr) => {
-      if (addr) setDisplayAddress(addr);
+      if (addr) {
+        setSearch(addr);
+      }
     });
   };
 
@@ -95,7 +98,7 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
       <div className="flex gap-2">
         <Input
           type="text"
-          value={search || displayAddress}
+          value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Buscar dirección..."
           className="flex-1 bg-white rounded-md border border-gray-300 p-2"
@@ -110,7 +113,7 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
       </div>
 
       <MapContainer
-        center={[value.lat ?? -34.603722, value.lng ?? -58.381592]}
+        center={[value.lat ?? -40.7620705, value.lng ?? -71.6472417]}
         zoom={13}
         className="w-full h-64 rounded border"
       >
