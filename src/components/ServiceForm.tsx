@@ -23,9 +23,10 @@ type UploadOneImageResponse = {
 interface ServiceFormProps {
   initialValues?: Partial<ServiceDetail>;
   onSubmit: (values: Partial<Service>, mediaPayload: FormData | number[] | null) => Promise<void>;
+  isAdmin?: boolean;
 }
 
-export default function ServiceForm({ initialValues = {}, onSubmit }: ServiceFormProps) {
+export default function ServiceForm({ initialValues = {}, onSubmit, isAdmin = true }: ServiceFormProps) {
   const [mediaPayload, setMediaPayload] = useState<FormData | number[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [providers, setProviders] = useState<Provider[]>([]);
@@ -90,7 +91,7 @@ export default function ServiceForm({ initialValues = {}, onSubmit }: ServiceFor
   await onSubmit(
     {
       ...formData,
-      providerId: selectedProvider?.id,
+      ...(isAdmin && { providerId: selectedProvider?.id }),
       serviceTypeId: selectedServiceType?.id,
     },
     mediaPayload
@@ -199,7 +200,7 @@ export default function ServiceForm({ initialValues = {}, onSubmit }: ServiceFor
         />
       </div>
 
-      {/* Proveedor */}
+      {isAdmin && (
       <div className="relative">
         <label className="block text-sm mb-1">Proveedor</label>
         <Combobox value={selectedProvider} onChange={setSelectedProvider}>
@@ -225,7 +226,7 @@ export default function ServiceForm({ initialValues = {}, onSubmit }: ServiceFor
             </Combobox.Options>
           </div>
         </Combobox>
-      </div>
+      </div>)}
     
 
 

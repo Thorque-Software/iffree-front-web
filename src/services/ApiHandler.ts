@@ -88,6 +88,17 @@ export const getServiceDetails = (params: {
 export const getOneServiceDetail = (id: string) =>
   fetchOne<ServiceDetail>(`/services/${id}`);
 
+export const getProviderSelf = () =>
+  fetchOne<Provider>("/users/self");
+
+export const getProviderServices = (id: string,params: {
+  page: number;
+  pageSize: number;
+  filters?: Record<string, any>;
+}) => {
+  const { filters, ...rest } = params;
+  return fetchList<ServiceDetail>(`/providers/${id}/services`, { ...rest, ...filters });
+};
 export const getOneProvider = (id: string) =>
   fetchOne<Provider>(`/providers/${id}`);
 
@@ -138,6 +149,9 @@ export const PostProvider = (data: ProviderData) =>
 
 export const PostService = (data: Partial<Service>) =>
   post<ServiceDetail>("/services", data);
+
+export const PostProviderService = (id: string, data: Partial<Service>) =>
+  post<ServiceDetail>(`/providers/${id}/services`, data);
 
 export const PutProvider = (id: string, data: Partial<ProviderData>) =>
   put<Provider>(`/providers/${id}`, data);
