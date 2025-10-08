@@ -2,10 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
-import { getShifts } from '@/services/ApiHandler';
+import { getShiftsProvider } from '@/services/ApiHandler';
 import { Shift } from '@/types/domain';
 import { DataTable } from '@/components/DataTable';
 import { formatDate } from '@/utils/utils';
+import { useAuth } from '@/hooks/useAuth';
 
 
 const columns: ColumnDef<Shift>[] = [
@@ -17,15 +18,18 @@ const columns: ColumnDef<Shift>[] = [
 ];
 
 const ShiftsTable = () => {
+  const { user } = useAuth();
+  const [providerId, setProviderId] = useState<string>("");
   const [data, setData] = useState<Shift[]>([]);
   const [pagination, setPagination] = useState({ page: 1, pageSize: 5 });
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
 
-  const fetchData = async (page: number, search?: string) => {
+  const fetchData = async (page: number, providerIdParams?: string) => {
     setLoading(true);
     try {
-      const res = await getShifts({ page, pageSize: pagination.pageSize, search });
+      const providerIdToUse = providerIdParams || providerId;
+      const res = await getShiftsProvider(providerIdToUse, { page, pageSize: pagination.pageSize });
       setData(res.items);
       setPagination(res.pagination);
       setTotal(res.total);
@@ -33,10 +37,19 @@ const ShiftsTable = () => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+      if(user && user.providerId) {
+      setProviderId(user.providerId);
+      fetchData(pagination.page, user.providerId);    
+      }
+    }, [user]);
 
   useEffect(() => {
+    if (!providerId) return;
     fetchData(pagination.page);
-  }, [pagination.page]);
+  }, [pagination.page, user]);
+
+
 
   return (
     <div>

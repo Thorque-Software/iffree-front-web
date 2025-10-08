@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import ServiceCard from "@/components/ServiceCard";
-import { getProviderServices, getServiceTypes,getProviders, DeleteService } from "@/services/ApiHandler";
-import { ServiceDetail,Provider,ServiceType } from "@/types/domain";
+import { getProviderServices, getServiceTypes, DeleteServiceProviders } from "@/services/ApiHandler";
+import { ServiceDetail,ServiceType } from "@/types/domain";
 import Link from "next/link";
 import Swal from "sweetalert2";
 import { useAuth } from "@/hooks/useAuth";
@@ -47,7 +47,7 @@ const ServicesPage = () => {
   };
 
   const handleDelete = async (serviceDetailId: number) => {
-      const result = await DeleteService(serviceDetailId);
+      const result = await DeleteServiceProviders(providerId, serviceDetailId);
       if (result) {
         Swal.fire({
           icon: 'success',
@@ -140,7 +140,7 @@ const ServicesPage = () => {
       {/* === LISTA DE SERVICIOS A LA DERECHA === */}
       <div className="flex-1">
         {loading ? <p>Cargando...</p> : data.map((service) => (
-          <ServiceCard key={service.id} serviceDetail={service} onDelete={handleDelete} />
+          <ServiceCard key={service.id} serviceDetail={service} onDelete={handleDelete} isAdmin={false} />
         ))}
         <div className="flex justify-center mt-4">
             <button

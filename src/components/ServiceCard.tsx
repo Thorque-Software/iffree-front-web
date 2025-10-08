@@ -9,11 +9,13 @@ import Swal from 'sweetalert2'
 interface ServiceCardProps {
   serviceDetail: ServiceDetail;
   onDelete: (serviceDetailId: number) => void;
+  isAdmin?: boolean;
 }
 
-const ServiceCard: React.FC<ServiceCardProps> = ({ serviceDetail, onDelete }) => {
+const ServiceCard: React.FC<ServiceCardProps> = ({ serviceDetail, onDelete, isAdmin=true }) => {
   const { urls: medias, loading } = useSignedMedia(serviceDetail.mediaService);
   const [currentMedia, setCurrentMedia] = useState(0);
+  const role = isAdmin ? "admin" : "provider";
 
   const nextMedia = () =>
     setCurrentMedia((prev) => (prev + 1 < medias.length ? prev + 1 : 0));
@@ -98,13 +100,13 @@ const ServiceCard: React.FC<ServiceCardProps> = ({ serviceDetail, onDelete }) =>
 
         <div className="flex gap-2 justify-end">
           <Link
-            href={`/admin/services/shifts/${serviceDetail.id}`}
+            href={`/${role}/services/shifts/${serviceDetail.id}`}
             className="bg-gray-800 text-white px-3 py-1 rounded"
           >
             Ver
           </Link>
           <Link
-            href={`/admin/services/edit/${serviceDetail.id}`}
+            href={`/${role}/services/edit/${serviceDetail.id}`}
             className="border px-3 py-1 rounded"
           >
             Editar

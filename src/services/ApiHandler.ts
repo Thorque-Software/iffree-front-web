@@ -58,6 +58,15 @@ export const getShifts = (params: {
     fromDate: getTodayFormatted(),
   });
 
+export const getShiftsProvider = (providerId: string, params: {
+  page: number;
+  pageSize: number;
+}) =>
+  fetchList<Shift>(`/providers/${providerId}/shifts`, {
+    ...params,
+    fromDate: getTodayFormatted(),
+  });
+
 export const getReservations = (params: {
   page: number;
   pageSize: number;
@@ -87,6 +96,9 @@ export const getServiceDetails = (params: {
 };
 export const getOneServiceDetail = (id: string) =>
   fetchOne<ServiceDetail>(`/services/${id}`);
+
+export const getOneServiceDetailProvider = (providerId: string, serviceId: string) =>
+  fetchOne<ServiceDetail>(`/providers/${providerId}/services/${serviceId}`);
 
 export const getProviderSelf = () =>
   fetchOne<Provider>("/users/self");
@@ -158,8 +170,14 @@ export const PutProvider = (id: string, data: Partial<ProviderData>) =>
 
 export const DeleteService = (id: number) => del(`/services/${id}`);
 
+export const DeleteServiceProviders = (providerId: string, serviceId: number) => 
+  del(`/providers/${providerId}/services/${serviceId}`);
+
 export const PutService = (id: string, data: Partial<Service>) =>
   put<ServiceDetail>(`/services/${id}`, data);
+
+export const PutServiceProvider = (providerId: string, serviceId: string, data: Partial<Service>) =>
+  put<ServiceDetail>(`/providers/${providerId}/services/${serviceId}`, data);
 
 // ---------- Media ----------
 export const handleMedia = async (route: string, files: FormData) => {

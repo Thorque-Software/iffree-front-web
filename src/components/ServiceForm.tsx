@@ -56,11 +56,13 @@ export default function ServiceForm({ initialValues = {}, onSubmit, isAdmin = tr
   useEffect(() => {
     const fetchData = async () => {
     setLoading(true);
-      try {
-        const resProviders = await getProviders({ page: 1, pageSize: 100 });
+      try {        
         const resServiceTypes = await getServiceTypes();
         setServiceTypes(resServiceTypes.items);
-        setProviders(resProviders.items);
+        if(isAdmin){
+          const resProviders = await getProviders({ page: 1, pageSize: 100 });
+          setProviders(resProviders.items);
+        }
     } finally {
         setLoading(false);
     }
@@ -77,7 +79,6 @@ export default function ServiceForm({ initialValues = {}, onSubmit, isAdmin = tr
       setSelectedServiceType(initialValues.serviceType);
       setFormData(prev => ({ ...prev, serviceTypeId: initialValues.serviceType?.id }));
     }
-    console.log("cleanup");
   }, []);
 
 
