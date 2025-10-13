@@ -8,7 +8,7 @@ import type {
   ServiceType,
   Service,
 } from "@/types/domain";
-import { getTodayFormatted } from "@/utils/utils";
+import { addOneDay, getTodayFormatted } from "@/utils/utils";
 
 // ---------- Tipos Genéricos ----------
 type PaginatedResponse<T> = {
@@ -67,6 +67,15 @@ export const getShiftsProvider = (providerId: string, params: {
     fromDate: getTodayFormatted(),
   });
 
+export const getShiftsServicesByDate = (providerId: string, date: string ,serviceId?: number, dateTo?: string) =>
+  fetchList<Shift>(`/providers/${providerId}/shifts`, {
+    fromDate: date,
+    toDate: dateTo || addOneDay(date),
+    page: 1,
+    pageSize: 100,
+    serviceId,
+  });
+
 export const getReservations = (params: {
   page: number;
   pageSize: number;
@@ -77,12 +86,22 @@ export const getReservations = (params: {
   return fetchList<Reservation>("/reservations", { ...rest, ...filters });
 }
 
+export const getReservationsProvider = (providerId: string, params: {
+  page: number;
+  pageSize: number;
+  search?: string;
+  filters?: Record<string, any>;
+}) => {
+  const { filters, ...rest } = params;
+  return fetchList<Reservation>(`/providers/${providerId}/reservations`, { ...rest, ...filters });
+}
+
 export const getProviders = (params: {
   page: number;
   pageSize: number;
   search?: string;
   filters?: Record<string, any>;
-}) =>{
+}) => {
   const { filters, ...rest } = params;
   return fetchList<Provider>("/providers", { ...rest, ...filters });
 };

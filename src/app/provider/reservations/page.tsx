@@ -1,11 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
-import { getReservations } from '@/services/ApiHandler';
+import { getReservationsProvider } from '@/services/ApiHandler';
 import { Reservation } from '@/types/domain';
 import { DataTable } from '@/components/DataTable';
 import { formatDate } from '@/utils/utils';
+import { useAuth } from '@/hooks/useAuth';
+import Link from 'next/link';
 
 
 const columns: ColumnDef<Reservation>[] = [
@@ -38,6 +40,8 @@ const columns: ColumnDef<Reservation>[] = [
 ];
 
 const ReservationTable = () => {
+  const { user } = useAuth();
+  const [providerId, setProviderId] = useState<string>("");
   const [data, setData] = useState<Reservation[]>([]);
   const [pagination, setPagination] = useState({ page: 1, pageSize: 5 });
   const [total, setTotal] = useState(0);
@@ -46,12 +50,14 @@ const ReservationTable = () => {
   const [search, setSearch] = useState('');
 
 
-  const fetchData = async (page: number, searchParams?: string, filtersParams?: Record<string, any>) => {
+  const fetchData = async (page: number, searchParams?: string, filtersParams?: Record<string, any>, providerIdParams?: string) => {
+    if (!providerId && !providerIdParams) return;
     setLoading(true);
     try {
+      const providerIdToUse = providerIdParams || providerId;
       const sear = searchParams || search;
       const filt = filtersParams || filters;
-      const res = await getReservations({ page, pageSize: pagination.pageSize, search: sear, filters: filt });
+      const res = await getReservationsProvider(providerIdToUse, { page, pageSize: pagination.pageSize, search: sear, filters: filt });
       setData(res.items);
       setPagination(res.pagination);
       setTotal(res.total);
@@ -59,10 +65,21 @@ const ReservationTable = () => {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    if (user && user.providerId) {
+      setProviderId(user.providerId);
+      fetchData(1, "", filters, user.providerId);
+    }
+  }, [user]);
 
   return (
     <div>
-      <h1 className="text-4xl font-semibold mb-6">Reservas</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-4xl font-semibold mb-6">Reservas</h1>
+        <Link href="/provider/reservations/new" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+          Nueva Reserva
+        </Link>
+      </div>
       <DataTable
         columns={columns}
         data={data}
