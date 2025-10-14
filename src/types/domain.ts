@@ -87,6 +87,7 @@ type ShiftStatus = 'enabled' | 'suspended' | 'payed';
 export interface Shift {
   id: number;
   serviceId: number;
+  serviceName?: string;
   start: string;
   end: string;
   maxCapacity: number;
