@@ -87,13 +87,8 @@ export default function EditReservation({ params }: { params: { id: string } }) 
   }
 
   return (
-    <ReservationForm
-      services={services}
-      shifts={shifts}
-      statuses={statuses}
-      onServiceChange={handleServiceChange}
-      onSubmit={handleSubmit}
-      initialData={initialData}
-    />
+    <div className="flex items-center justify-center h-64 text-gray-500">
+        Cargando reserva...
+      </div>
   );
 }

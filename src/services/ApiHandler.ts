@@ -184,6 +184,9 @@ export const PostService = (data: Partial<Service>) =>
 export const PostProviderService = (id: string, data: Partial<Service>) =>
   post<ServiceDetail>(`/providers/${id}/services`, data);
 
+export const PostProviderReservation = (id: string, data: Partial<Reservation>) =>
+  post<Reservation>(`/providers/${id}/reservations`, data);
+
 export const PutProvider = (id: string, data: Partial<ProviderData>) =>
   put<Provider>(`/providers/${id}`, data);
 

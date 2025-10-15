@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState} from 'react';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { DateSelectArg, EventClickArg, EventInput } from '@fullcalendar/core';
+import { EventClickArg, EventInput } from '@fullcalendar/core';
 import {getShiftsServicesByDate} from '@/services/ApiHandler';
 import { Shift } from '@/types/domain';
 
@@ -40,11 +40,8 @@ export default function Calendar() {
   };
 
   const handleEventClick = async (clickInfo: EventClickArg) => {
-    if (confirm(`¿Eliminar "${clickInfo.event.title}"?`)) {
-      const id = clickInfo.event.id;
-      await fetch(`/api/events/${id}`, { method: 'DELETE' });
-      setEvents((prev) => prev.filter((e) => e.id !== id));
-    }
+    const id = clickInfo.event.id;
+    window.open(`/provider/reservations?shiftId=${id}`, "_blank", "noopener,noreferrer");
   };
 
   return (

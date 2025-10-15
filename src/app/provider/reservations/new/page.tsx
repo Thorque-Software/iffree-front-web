@@ -1,10 +1,12 @@
 'use client';
 
-import ReservationForm, {mappedShifts} from '@/components/ReservationForm';
-import { getProviderServices,getShiftsServicesByDate } from '@/services/ApiHandler';
+import ReservationForm, {mappedShifts,PostReservation} from '@/components/ReservationForm';
+import { getProviderServices,getShiftsServicesByDate,PostProviderReservation } from '@/services/ApiHandler';
 import { useEffect, useState } from 'react';
 import { ServiceDetail, Shift } from '@/types/domain';
 import { useAuth } from '@/hooks/useAuth';
+import Swal from 'sweetalert2';
+import router from 'next/router';
 
 function mapShifts(data: Shift[]): { id: number; shift: string }[] {
   return Object.values(data).map((item) => {
@@ -63,9 +65,27 @@ export default function NewReservation() {
     }   
   };
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = async (data: PostReservation) => {
     console.log('Datos de reserva:', data);
-    alert('Reserva enviada correctamente');
+    try {
+          await PostProviderReservation(providerId, data);
+          Swal.fire({
+            icon: 'success',
+            title: 'Servicio creado con éxito',
+            showConfirmButton: false,
+            timer: 1500
+          }).then(() => {
+            router.push('/provider/reservations');
+          });
+    
+        } catch (error) {
+          console.error("Error creating reservation:", error);
+          Swal.fire({
+            icon: 'error',
+            title: 'Error al crear el servicio',
+            text: error instanceof Error ? error.message : 'Ha ocurrido un error inesperado',
+          });
+        }
   };
 
   return (

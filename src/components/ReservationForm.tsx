@@ -1,19 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import{ ServiceDetail } from '@/types/domain';
+import{ ServiceDetail, ReservationStatus} from '@/types/domain';
 
 export type mappedShifts = { id: number; shift: string }[];
 
 const statuses = [
-  {
-    value: 'to_confirm',
-    label: 'A confirmar'
-  },
-  {
-    value: 'to_pay',
-    label: 'A pagar'
-  },
   {
     value: 'payed',
     label: 'Pagado'
@@ -24,13 +16,32 @@ const statuses = [
   }
 ]
 
-interface Assistant {
-  nombre: string;
-  apellido: string;
+const fieldConfig: Record<keyof Attendee, { label: string; type: string; placeholder: string }> = {
+  name: { label: "Nombre", type: "text", placeholder: "Nombre" },
+  lastname: { label: "Apellido", type: "text", placeholder: "Apellido" },
+  email: { label: "Email", type: "email", placeholder: "ejemplo@correo.com" },
+  dateOfBirth: { label: "Fecha de nacimiento", type: "date", placeholder: "" },
+  docNumber: { label: "Documento", type: "text", placeholder: "DNI / Pasaporte" },
+  docTypeId: { label: "Tipo de documento", type: "number", placeholder: "ID tipo doc" },
+  countryId: { label: "País", type: "number", placeholder: "ID país" },
+};
+
+
+interface Attendee {
+  name: string;
+  lastname: string;
   email: string;
-  edad: string;
-  documento: string;
+  dateOfBirth: string;
+  docNumber: string;
+  docTypeId: number;
+  countryId: number;
 }
+
+export type PostReservation = {
+  shiftId: number;
+  status: ReservationStatus;
+  attendees: Attendee[];
+};
 
 interface ReservationFormProps {
   services: ServiceDetail[];
@@ -40,15 +51,9 @@ interface ReservationFormProps {
     shiftId?: number;
     status?: string;
     date?: string;
-    assistants?: Assistant[];
+    attendees?: Attendee[];
   };
-  onSubmit: (data: {
-    serviceId: number;
-    shiftId: number;
-    status: string;
-    date: string;
-    assistants: Assistant[];
-  }) => void;
+  onSubmit: (data: PostReservation) => void;
   onServiceChange: (serviceId: number, date: string) => Promise<void> | void;
 }
 
@@ -65,8 +70,8 @@ export default function ReservationForm({
   );
   const [selectedStatus, setSelectedStatus] = useState(initialData?.status || '');
   const [date, setDate] = useState(initialData?.date || '');
-  const [assistants, setAssistants] = useState<Assistant[]>(
-    initialData?.assistants || [{ nombre: '', apellido: '', email: '', edad: '', documento: '' }]
+  const [attendees, setAttendees] = useState<Attendee[]>(
+    initialData?.attendees || [{ name: '', lastname: '', email: '', dateOfBirth: '', docNumber: '', docTypeId: 1 , countryId: 1 }]
   );
 
   // Cuando cambia el servicio, llamamos al fetch externo
@@ -74,27 +79,25 @@ export default function ReservationForm({
     if (selectedServiceId && date) onServiceChange(selectedServiceId, date);
   }, [selectedServiceId, date]);
 
-  const addAssistant = () => {
-    setAssistants([...assistants, { nombre: '', apellido: '', email: '', edad: '', documento: '' }]);
+  const addAttendee = () => {
+    setAttendees([...attendees, { name: '', lastname: '', email: '', dateOfBirth: '', docNumber: '' , docTypeId: 1 , countryId: 1}]);
   };
 
-  const removeAssistant = (index: number) => {
-    setAssistants(assistants.filter((_, i) => i !== index));
+  const removeAttendee = (index: number) => {
+    setAttendees(attendees.filter((_, i) => i !== index));
   };
 
-  const updateAssistant = (index: number, field: keyof Assistant, value: string) => {
-    const updated = [...assistants];
+  const updateAttendee = (index: number, field: keyof Attendee, value: string) => {
+    const updated = [...attendees];
     updated[index][field] = value;
-    setAssistants(updated);
+    setAttendees(updated);
   };
 
   const handleSubmit = () => {
     onSubmit({
-      serviceId: selectedServiceId || 0,
       shiftId: selectedShiftId,
-      status: selectedStatus,
-      date,
-      assistants,
+      status: selectedStatus as ReservationStatus,
+      attendees,
     });
   };
 
@@ -170,7 +173,7 @@ export default function ReservationForm({
       <div className="flex justify-end mb-4">
         <h2 className="text-2xl font-semibold mr-auto">Asistentes</h2>
         <button
-          onClick={addAssistant}
+          onClick={addAttendee}
           className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
         >
           Agregar asistente
@@ -178,10 +181,10 @@ export default function ReservationForm({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-        {assistants.map((assistant, index) => (
+        {attendees.map((attendee, index) => (
           <div key={index} className="bg-gray-200 p-4 rounded-md relative">
             <button
-              onClick={() => removeAssistant(index)}
+              onClick={() => removeAttendee(index)}
               className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 font-bold"
             >
               ×
@@ -189,20 +192,22 @@ export default function ReservationForm({
 
             <h2 className="font-bold mb-2">Asistente {index + 1}</h2>
 
-            {(['nombre', 'apellido', 'email', 'edad', 'documento'] as (keyof Assistant)[]).map(
-              (field) => (
+            {(['name', 'lastname', 'email', 'dateOfBirth', 'docNumber'] as (keyof Attendee)[]).map((field) => {
+              const config = fieldConfig[field];
+
+              return (
                 <div key={field}>
-                  <label className="block text-sm font-medium mb-1 capitalize">{field}</label>
+                  <label className="block text-sm font-medium mb-1">{config.label}</label>
                   <input
-                    type={field === 'email' ? 'email' : 'text'}
-                    placeholder={field}
-                    value={assistant[field]}
-                    onChange={(e) => updateAssistant(index, field, e.target.value)}
+                    type={config.type}
+                    placeholder={config.placeholder}
+                    value={attendee[field] ?? ""}
+                    onChange={(e) => updateAttendee(index, field, e.target.value)}
                     className="w-full bg-white rounded-md border border-gray-300 p-2 mb-2"
                   />
                 </div>
-              )
-            )}
+              );
+            })}
           </div>
         ))}
       </div>

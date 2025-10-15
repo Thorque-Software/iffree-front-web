@@ -8,6 +8,7 @@ import { DataTable } from '@/components/DataTable';
 import { formatDate } from '@/utils/utils';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
+import { useSearchParams } from "next/navigation";
 
 
 const columns: ColumnDef<Reservation>[] = [
@@ -40,6 +41,8 @@ const columns: ColumnDef<Reservation>[] = [
 ];
 
 const ReservationTable = () => {
+  const searchParams = useSearchParams();
+  const shiftId = searchParams.get('shiftId') || undefined;
   const { user } = useAuth();
   const [providerId, setProviderId] = useState<string>("");
   const [data, setData] = useState<Reservation[]>([]);
@@ -57,7 +60,7 @@ const ReservationTable = () => {
       const providerIdToUse = providerIdParams || providerId;
       const sear = searchParams || search;
       const filt = filtersParams || filters;
-      const res = await getReservationsProvider(providerIdToUse, { page, pageSize: pagination.pageSize, search: sear, filters: filt });
+      const res = await getReservationsProvider(providerIdToUse, { page, pageSize: pagination.pageSize, search: sear, filters: { ...filt, shiftId } });
       setData(res.items);
       setPagination(res.pagination);
       setTotal(res.total);

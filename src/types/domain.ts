@@ -99,24 +99,24 @@ export interface Shift {
 }
 
 // Tipo para el usuario final
-export interface FinalUser {
-  id: number;
+export type FinalUser = {
+  id?: number;
   name: string;
   lastname: string;
   email: string;
   countryId: number;
-  userId: number;
+  userId?: number;
   dateOfBirth: string;
   docTypeId: number;
   docNumber: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
   reservationId?: number;
 }
 
 
-type ReservationStatus = 'to_confirm' | 'to_pay' | 'payed' | 'paying';
+export type ReservationStatus = 'to_confirm' | 'to_pay' | 'payed' | 'paying';
 
 // Tipo para cada reserva o item
 export interface Reservation {
