@@ -8,6 +8,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { EventClickArg, EventInput } from '@fullcalendar/core';
 import {getShiftsServicesByDate} from '@/services/ApiHandler';
 import { Shift } from '@/types/domain';
+import Link from 'next/link';
 
 export default function Calendar() {
   const [events, setEvents] = useState<EventInput[]>([]);
@@ -20,7 +21,7 @@ export default function Calendar() {
       console.log('Eventos obtenidos:', res.items);
       const mappedEvents = res.items.map((shift: Shift) => ({
         id: String(shift.id),
-        title: shift.service?.name || 'Sin nombre',
+        title: shift.serviceName || 'Sin nombre',
         start: shift.start,
         end: shift.end,
         allDay: false,
@@ -46,7 +47,12 @@ export default function Calendar() {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      <h1 className="text-2xl font-bold mb-4">Calendario</h1>
+      <div className="mb-4 flex justify-between items-center">
+        <h1 className="text-2xl font-bold mb-4">Calendario</h1>
+        <Link href="/provider/calendar/shifts" className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          Crear nuevos turnos
+        </Link>
+      </div>
       {loading && <p className="text-gray-500 mb-2">Cargando eventos...</p>}
 
       <FullCalendar
