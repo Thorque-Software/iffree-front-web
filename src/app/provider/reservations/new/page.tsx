@@ -6,7 +6,8 @@ import { useEffect, useState } from 'react';
 import { ServiceDetail, Shift } from '@/types/domain';
 import { useAuth } from '@/hooks/useAuth';
 import Swal from 'sweetalert2';
-import router from 'next/router';
+import { useRouter } from "next/navigation";
+
 
 function mapShifts(data: Shift[]): { id: number; shift: string }[] {
   return Object.values(data).map((item) => {
@@ -28,6 +29,7 @@ function mapShifts(data: Shift[]): { id: number; shift: string }[] {
 
 export default function NewReservation() {
   const { user } = useAuth();
+  const router = useRouter();
   const [providerId, setProviderId] = useState<string>("");
   const [services, setServices] = useState<ServiceDetail[]>([]);
   const [shifts, setShifts] = useState<mappedShifts>([]);

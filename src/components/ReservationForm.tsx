@@ -89,7 +89,12 @@ export default function ReservationForm({
 
   const updateAttendee = (index: number, field: keyof Attendee, value: string) => {
     const updated = [...attendees];
-    updated[index][field] = value;
+    // Convert value to number for numeric fields
+    if (field === 'docTypeId' || field === 'countryId') {
+      updated[index][field] = Number(value);
+    } else {
+      updated[index][field] = value;
+    }
     setAttendees(updated);
   };
 
