@@ -39,6 +39,15 @@ const columns: ColumnDef<Reservation>[] = [
       default: return status;
     }
   }},
+  {
+    id: "actions",
+    header: "Acciones",
+    cell: ({ row }) => {
+      return (
+        <Link href={`/provider/reservations/details/${row.original.id}`} className="bg-green-700 text-white px-4 py-2 rounded mr-4">Detalle</Link>
+      );
+    },
+  },
 ];
 
 const ReservationTable = () => {

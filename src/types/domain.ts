@@ -124,6 +124,7 @@ export interface Reservation {
   id: number;
   shiftId: number;
   finalUserId: number;
+  finalPrice?: number;
   status: ReservationStatus;
   createdAt: string;
   updatedAt: string;

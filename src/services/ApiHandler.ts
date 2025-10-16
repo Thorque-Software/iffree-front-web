@@ -95,6 +95,9 @@ export const getReservations = (params: {
   return fetchList<Reservation>("/reservations", { ...rest, ...filters });
 }
 
+export const getReservationProviderById = (providerId: string, id: string) =>
+  fetchOne<Reservation>(`/providers/${providerId}/reservations/${id}`);
+
 export const getReservationsProvider = (providerId: string, params: {
   page: number;
   pageSize: number;
@@ -199,10 +202,19 @@ export const PostProviderReservation = (providerId: string, data: Partial<Reserv
 export const PostProviderShift = (providerId: string, data: ShiftsPost[]) =>
   post<Shift>(`/providers/${providerId}/shifts`, data);
 
+export const PutProviderReservationStatus = (providerId:string, id: string, status: string) =>
+  put<Provider>(`/providers/${providerId}/reservations/${id}`, { status });
+
+export const PutProviderReservationToConfirm = (providerId:string, id: string, status: "confirm" | "decline") =>
+  put<Provider>(`/providers/${providerId}/reservations/${id}/${status}`, {});
+
 export const PutProvider = (id: string, data: Partial<ProviderData>) =>
   put<Provider>(`/providers/${id}`, data);
 
 export const DeleteService = (id: number) => del(`/services/${id}`);
+
+export const DeleteProviderReservation = (providerId: string, id: string) =>
+  del(`/providers/${providerId}/reservations/${id}`);
 
 export const DeleteServiceProviders = (providerId: string, serviceId: number) => 
   del(`/providers/${providerId}/services/${serviceId}`);
