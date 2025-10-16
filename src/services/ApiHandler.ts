@@ -47,6 +47,15 @@ const fetchOne = async <T>(url: string): Promise<T> => {
 };
 
 // ---------- Shifts / Reservations / Providers / Services ----------
+export type ShiftsPost = {
+  serviceId: number;
+  start: string;
+  end?: string;
+  capacity: number;
+  status: number;
+};
+
+
 export const getShifts = (params: {
   page: number;
   pageSize: number;
@@ -181,11 +190,14 @@ export const PostProvider = (data: ProviderData) =>
 export const PostService = (data: Partial<Service>) =>
   post<ServiceDetail>("/services", data);
 
-export const PostProviderService = (id: string, data: Partial<Service>) =>
-  post<ServiceDetail>(`/providers/${id}/services`, data);
+export const PostProviderService = (providerId: string, data: Partial<Service>) =>
+  post<ServiceDetail>(`/providers/${providerId}/services`, data);
 
-export const PostProviderReservation = (id: string, data: Partial<Reservation>) =>
-  post<Reservation>(`/providers/${id}/reservations`, data);
+export const PostProviderReservation = (providerId: string, data: Partial<Reservation>) =>
+  post<Reservation>(`/providers/${providerId}/reservations`, data);
+
+export const PostProviderShift = (providerId: string, data: ShiftsPost[]) =>
+  post<Shift>(`/providers/${providerId}/shifts`, data);
 
 export const PutProvider = (id: string, data: Partial<ProviderData>) =>
   put<Provider>(`/providers/${id}`, data);

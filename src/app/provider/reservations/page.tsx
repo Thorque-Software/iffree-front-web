@@ -18,6 +18,7 @@ const columns: ColumnDef<Reservation>[] = [
     header: 'Cliente',
     cell: ({ row }) => {
       const { finalUser } = row.original;
+      if(!finalUser) return 'N/A';
       return `${finalUser.name} ${finalUser.lastname}`;
     },
   },
