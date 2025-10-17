@@ -76,6 +76,9 @@ export const getShiftsProvider = (providerId: string, params: {
     fromDate: getTodayFormatted(),
   });
 
+  export const getOneShiftProvider = (providerId: string, shiftId: string) =>
+  fetchOne<Shift>(`/providers/${providerId}/shifts/${shiftId}`);
+
 export const getShiftsServicesByDate = (providerId: string, date: string ,serviceId?: number, dateTo?: string) =>
   fetchList<Shift>(`/providers/${providerId}/shifts`, {
     fromDate: date,
@@ -215,6 +218,9 @@ export const DeleteService = (id: number) => del(`/services/${id}`);
 
 export const DeleteProviderReservation = (providerId: string, id: string) =>
   del(`/providers/${providerId}/reservations/${id}`);
+
+export const DeleteProviderShift = (providerId: string, shiftId: string) =>
+  del(`/providers/${providerId}/shifts/${shiftId}`);
 
 export const DeleteServiceProviders = (providerId: string, serviceId: number) => 
   del(`/providers/${providerId}/services/${serviceId}`);

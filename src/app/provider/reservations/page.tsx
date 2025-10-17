@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
-import { getReservationsProvider } from '@/services/ApiHandler';
-import { Reservation } from '@/types/domain';
+import { getReservationsProvider,getOneShiftProvider, DeleteProviderShift } from '@/services/ApiHandler';
+import { Reservation,Shift } from '@/types/domain';
 import { DataTable } from '@/components/DataTable';
 import { formatDate } from '@/utils/utils';
 import { useAuth } from '@/hooks/useAuth';
 import Link from 'next/link';
 import { useSearchParams } from "next/navigation";
+import Swal from 'sweetalert2';
+import { useRouter } from 'next/navigation';
 
 
 const columns: ColumnDef<Reservation>[] = [
@@ -51,8 +53,10 @@ const columns: ColumnDef<Reservation>[] = [
 ];
 
 const ReservationTable = () => {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const shiftId = searchParams.get('shiftId') || undefined;
+  const [shiftData, setShiftData] = useState<Shift | null>(null);
   const { user } = useAuth();
   const [providerId, setProviderId] = useState<string>("");
   const [data, setData] = useState<Reservation[]>([]);
@@ -78,20 +82,70 @@ const ReservationTable = () => {
       setLoading(false);
     }
   };
+
+  const handleDeleteShift = async () => {
+    if(!shiftId || !providerId) return;
+    Swal.fire({
+      title: '¿Estás seguro?',
+      text: 'Esta acción cancelará la salida y eliminará todas las reservas asociadas.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Sí, cancelar salida',
+      cancelButtonText: 'No, mantener salida',
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        setLoading(true);
+        try {
+          await DeleteProviderShift(providerId, shiftId);
+        } catch (error) {
+          console.error(error);
+        } finally {
+          setLoading(false);
+          Swal.fire({ icon: 'success', 
+            title: 'La salida ha sido cancelada',
+            showConfirmButton: false,
+            timer: 1500 
+          }).then(() => {
+            router.push('/provider/calendar');
+          });      
+        }
+      }
+    });
+  };
+    
+  const fetchShift = async (shiftId: string, providerId: string) => {
+    setLoading(true);
+    try {
+      const res = await getOneShiftProvider(providerId, shiftId);
+      setShiftData(res);
+    } finally {
+      setLoading(false);
+    }
+  }
   useEffect(() => {
     if (user && user.providerId) {
       setProviderId(user.providerId);
       fetchData(1, "", filters, user.providerId);
+      if(shiftId) fetchShift(shiftId, user.providerId);
     }
   }, [user]);
 
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
-        <h1 className="text-4xl font-semibold mb-6">Reservas</h1>
-        <Link href="/provider/reservations/new" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
-          Nueva Reserva
-        </Link>
+        {shiftData ? 
+          <h1 className="text-4xl font-semibold mb-6">Reservas del servicio {shiftData.serviceName}</h1> 
+          : 
+          <h1 className="text-4xl font-semibold mb-6">Reservas</h1>
+        }
+        {shiftData ? 
+          <button onClick={handleDeleteShift} className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition">Cancelar Salida</button>
+          : 
+          <Link href="/provider/reservations/new" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition">
+            Nueva Reserva
+          </Link>
+        }
+        
       </div>
       <DataTable
         columns={columns}
