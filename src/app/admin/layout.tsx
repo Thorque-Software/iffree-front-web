@@ -1,12 +1,16 @@
+"use client";
+
 import React, { ReactNode } from "react";
 import { ClipboardIcon, BriefcaseIcon, CheckCircleIcon, UserGroupIcon } from "@heroicons/react/24/outline";
 import Sidebar from "@/components/Sidebar";
+import { useRoleGuard } from "@/hooks/useRoleGuard";
 
 interface AdminLayoutProps {
   children: ReactNode;
 }
 
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
+  useRoleGuard("admin");
   const sidebarItems = [
     { label: "Dashboard", href: "/admin", icon: <ClipboardIcon className="w-6 h-6" /> },
     { label: "Servicios", href: "/admin/services", icon: <BriefcaseIcon className="w-6 h-6" /> },
