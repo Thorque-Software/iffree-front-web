@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState} from 'react';
+import React, { useState, useEffect} from 'react';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import dayGridPlugin from '@fullcalendar/daygrid';
@@ -9,15 +9,25 @@ import { EventClickArg, EventInput } from '@fullcalendar/core';
 import {getShiftsServicesByDate} from '@/services/ApiHandler';
 import { Shift } from '@/types/domain';
 import Link from 'next/link';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Calendar() {
   const [events, setEvents] = useState<EventInput[]>([]);
   const [loading, setLoading] = useState(false);
+  const { user } = useAuth();
+  const [providerId, setProviderId] = useState<string>("");
+
+  useEffect(() => {
+    if (user && user.providerId) {
+      setProviderId(user.providerId);
+    }
+  }, [user]);
 
   const fetchEvents = async (start: string, end: string) => {
+    if (!providerId) return;
     setLoading(true);
     try {
-      const res = await getShiftsServicesByDate("1", start, undefined, end);
+      const res = await getShiftsServicesByDate(providerId, start, undefined, end);
       console.log('Eventos obtenidos:', res.items);
       const mappedEvents = res.items.map((shift: Shift) => ({
         id: String(shift.id),
@@ -44,6 +54,14 @@ export default function Calendar() {
     const id = clickInfo.event.id;
     window.open(`/provider/reservations?shiftId=${id}`, "_blank", "noopener,noreferrer");
   };
+
+   if (!providerId) {
+    return (
+      <div className="p-6 bg-gray-50 min-h-screen">
+        <p className="text-gray-500">Cargando calendario...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
