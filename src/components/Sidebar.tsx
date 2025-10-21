@@ -37,8 +37,9 @@ const Sidebar: React.FC<SidebarProps> = ({ items }) => {
         {/* Navegación */}
         <nav className="flex flex-col w-full space-y-2 mt-4">
           {items.map((item) => {
-            const isActive = pathname === item.href;
-
+            const isActive = (item.href === '/admin' || item.href === '/provider') ? 
+                              (pathname === '/admin' || pathname === '/provider') : 
+                              (pathname.startsWith(item.href));
             return (
               <Link
                 key={item.href}
