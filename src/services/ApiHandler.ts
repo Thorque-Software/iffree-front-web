@@ -134,19 +134,16 @@ export const getOneServiceDetail = (id: string) =>
 export const getOneServiceDetailProvider = (providerId: string, serviceId: string) =>
   fetchOne<ServiceDetail>(`/providers/${providerId}/services/${serviceId}`);
 
-export const getProviderSelf = () =>
-  fetchOne<Provider>("/users/self");
-
-export const getProviderServices = (id: string,params: {
+export const getProviderServices = (providerId: string,params: {
   page: number;
   pageSize: number;
   filters?: Record<string, any>;
 }) => {
   const { filters, ...rest } = params;
-  return fetchList<ServiceDetail>(`/providers/${id}/services`, { ...rest, ...filters });
+  return fetchList<ServiceDetail>(`/providers/${providerId}/services`, { ...rest, ...filters });
 };
-export const getOneProvider = (id: string) =>
-  fetchOne<Provider>(`/providers/${id}`);
+export const getOneProvider = (providerId: string) =>
+  fetchOne<Provider>(`/providers/${providerId}`);
 
 // ---------- Cities / Service Types ----------
 export const getCities = () => fetchList<City>("/cities",{ page: 1, pageSize: 100 });
@@ -245,6 +242,16 @@ export const handleMedia = async (route: string, files: FormData) => {
 export const uploadMedia = async (serviceId: string, files: FormData) => {
   return handleMedia(`/services/${serviceId}/images`, files);
 };
+
+export const uploadProviderProfileImage = async (providerId: string, file: File) => {
+  const formData = new FormData();
+  formData.append("image", file, file.name);
+  return handleMedia(`/providers/${providerId}/images`, formData);
+}
+
+export const signOneMedia = async (media: { id: number; path: string }) => {
+  return post<{ mediaSign: { id: number; url: string } []}>('/medias', { medias: [{ id: media.id, path: media.path }] });
+}
 
 export const uploadOneMedia = async (serviceId: string, file: File) => {
   const formData = new FormData();

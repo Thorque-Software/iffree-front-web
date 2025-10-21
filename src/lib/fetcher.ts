@@ -18,7 +18,7 @@ export async function apiFetch<T>(
   const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || ''}${url}`, {
     ...options,
     ...(noHeaders
-      ? {}
+      ? { headers: { ...(token && !isLogin ? { Authorization: `Bearer ${token}` } : {}) } }
       : {
           headers: {
             'Content-Type': 'application/json',
