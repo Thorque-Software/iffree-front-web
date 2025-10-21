@@ -36,7 +36,7 @@ export default function EditServicePage({ params }: EditServicePageProps) {
   const handleSubmit = async (values: Partial<Service>, mediaPayload: FormData | number[] | null) => {
     try {
       await PutService(id, values);
-      if (mediaPayload && mediaPayload instanceof Array) {
+      if (mediaPayload && mediaPayload instanceof Array && mediaPayload.length > 0) {
         await reorderMedia(id, mediaPayload);
       }
       Swal.fire({
