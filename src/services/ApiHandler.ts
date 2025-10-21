@@ -264,3 +264,14 @@ export const deleteMedia = (serviceId: string, mediaId: number) =>
 
 export const reorderMedia = (serviceId: string, mediaOrder: number[]) =>
   put(`/services/${serviceId}/images`, { medias: mediaOrder });
+
+
+// ---------- Geocoding Utilities ----------
+
+export const findPlaces = async (query: string) => {
+  return fetchOne<{text:string; placeId:string;}[]>(`/google-maps/get-places?input=${query}`);
+};
+
+export const placesDetails = async (placeId:string) => {
+  return fetchOne<{latitude:number; longitude:number;}>(`/google-maps/get-details/${placeId}`);
+};
