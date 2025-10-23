@@ -8,12 +8,11 @@ import {
   useMap,
   useMapEvents,
 } from "react-leaflet";
-import { findPlaces, placesDetails } from "@/services/ApiHandler";
+import { findPlaces, getPlaceName, placesDetails } from "@/services/ApiHandler";
 import "leaflet/dist/leaflet.css";
 import L from "leaflet";
 import Swal from "sweetalert2";
 
-// Fix Leaflet icons para Next.js
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconUrl: "/leaflet/marker-icon.png",
@@ -21,22 +20,16 @@ L.Icon.Default.mergeOptions({
   shadowUrl: "/leaflet/marker-shadow.png",
 });
 
-// --- Tipos ---
 interface Suggestion {
   text: string;
   placeId: string;
 }
 
-// --- Reverse Geocode ---
 async function reverseGeocode(lat: number, lng: number): Promise<string | null> {
-  const res = await fetch(
-    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}`
-  );
-  const data = await res.json();
-  return data?.display_name ?? null;
+  const res = await getPlaceName(lat, lng);
+  return res?.place ?? null;
 }
 
-// --- Leaflet helpers ---
 function LocationMarker({
   setLocation,
 }: {
@@ -58,7 +51,6 @@ function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
   return null;
 }
 
-// --- Componente principal ---
 interface LocationPickerProps {
   value: { lat?: number; lng?: number };
   onChange: (value: { lat?: number; lng?: number }) => void;
@@ -67,7 +59,6 @@ interface LocationPickerProps {
 export default function LocationPicker({ value, onChange }: LocationPickerProps) {
   const [search, setSearch] = useState("");
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
-  const [selected, setSelected] = useState<Suggestion | null>(null);
 
   // Si ya hay coordenadas iniciales → reverse geocode
   useEffect(() => {
@@ -84,20 +75,21 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
       setSuggestions([]);
       return;
     }
-
     const timeout = setTimeout(async () => {
       const results = await findPlaces(search);
       setSuggestions(results);
     }, 400);
-
     return () => clearTimeout(timeout);
   }, [search]);
 
   // Selección de sugerencia
-  const handleSelect = async (s: Suggestion) => {
-    setSelected(s);
-    setSearch(s.text);
-    setSuggestions([]); // 💡 limpiar sugerencias al seleccionar
+  const handleSelect = async (selectedText: string) => {
+    setSearch(selectedText);
+    setSuggestions([]);
+
+    const s = suggestions.find((s) => s.text === selectedText);
+    if (!s) return;
+
     const coords = await placesDetails(s.placeId);
     if (coords) {
       onChange({ lat: coords.latitude, lng: coords.longitude });
@@ -109,7 +101,6 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
     }
   };
 
-  // Click en el mapa
   const handleMapClick = (lat: number, lng: number) => {
     onChange({ lat, lng });
     reverseGeocode(lat, lng).then((addr) => addr && setSearch(addr));
@@ -117,11 +108,10 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
 
   return (
     <div className="space-y-2 relative">
-      <Combobox value={selected} onChange={handleSelect}>
+      <Combobox value={search} onChange={handleSelect}>
         <div className="relative flex-1">
           <Combobox.Input
             className="w-full bg-white rounded-md border border-gray-300 p-2"
-            displayValue={(s: Suggestion | null) => s?.text || search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar dirección..."
           />
@@ -142,7 +132,7 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
               {suggestions.map((s) => (
                 <Combobox.Option
                   key={s.placeId}
-                  value={s}
+                  value={s.text}
                   className={({ active }) =>
                     `cursor-pointer select-none p-2 text-sm ${
                       active ? "bg-blue-100" : ""

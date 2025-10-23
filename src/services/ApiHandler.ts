@@ -275,3 +275,7 @@ export const findPlaces = async (query: string) => {
 export const placesDetails = async (placeId:string) => {
   return fetchOne<{latitude:number; longitude:number;}>(`/google-maps/get-details/${placeId}`);
 };
+
+export const getPlaceName = async (lat: number, long: number) => {
+  return fetchOne<{place:string;}>(`/google-maps/get-place-name?lat=${lat}&long=${long}`);
+};
