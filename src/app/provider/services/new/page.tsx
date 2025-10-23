@@ -23,8 +23,8 @@ export default function NewServicePage() {
     try {
       const response = await PostProviderService(providerId, values);
       const newServiceId = String(response?.id);
-      if (mediaPayload) {
-        mediaPayload instanceof FormData && await uploadMedia(newServiceId, mediaPayload);
+      if (mediaPayload && mediaPayload instanceof FormData && Array.from(mediaPayload.keys()).length > 0) {
+        await uploadMedia(newServiceId, mediaPayload);
         console.log("Media uploaded", mediaPayload);
       }
       Swal.fire({

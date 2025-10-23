@@ -11,6 +11,7 @@ import Swal from "sweetalert2";
 
 const ServicesPage = () => {
   const [pagination, setPagination] = useState({ page: 1, pageSize: 5 });
+  const [totalItems, setTotalItems] = useState(1);
   const [loading, setLoading] = useState(false);
   const [data, setData] = useState<ServiceDetail[]>([]);
   const [providers, setProviders] = useState<Provider[]>([]);
@@ -29,16 +30,17 @@ const ServicesPage = () => {
     return () => clearTimeout(handler);
   }, [filters.name]);
 
-  const fetchData = async () => {
+  const fetchData = async (page?: number) => {
     setLoading(true);
     try {
       const res = await getServiceDetails({
-        page: pagination.page,
+        page: page || pagination.page,
         pageSize: pagination.pageSize,
         filters: { ...filters, name: debouncedName },
       });
       setData(res.items);
       setPagination(res.pagination);
+      setTotalItems(res.total);
     } finally {
       setLoading(false);
     }
@@ -72,8 +74,8 @@ const ServicesPage = () => {
   }, []);
 
   useEffect(() => {
-    fetchData();
-  }, [debouncedName, filters.providerId, filters.serviceTypeId, filters.forAdultsOnly, filters.cheaperThan, pagination.page]);
+    fetchData(1);
+  }, [debouncedName, filters.providerId, filters.serviceTypeId, filters.forAdultsOnly, filters.cheaperThan]);
 
   return (
     <div className="flex gap-4">
@@ -142,26 +144,32 @@ const ServicesPage = () => {
 
       {/* === LISTA DE SERVICIOS A LA DERECHA === */}
       <div className="flex-1">
-        {loading ? <p>Cargando...</p> : data.map((service) => (
-          <ServiceCard key={service.id} serviceDetail={service} onDelete={handleDelete} />
-        ))}
+        {loading ? (
+          <p>Cargando...</p>
+        ) : data && data.length > 0 ? (
+          data.map((service: ServiceDetail) => (
+            <ServiceCard key={service.id} serviceDetail={service} onDelete={handleDelete} />
+          ))
+        ) : (
+          <p className="text-center">No hay servicios disponibles</p>
+        )}
         <div className="flex justify-center mt-4">
             <button
               disabled={pagination.page <= 1 || loading}
-              onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
+              onClick={() => fetchData(Math.max(pagination.page - 1, 1))}
               className="mr-3 px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
             >
               ◀
             </button>
-            <span>Página {pagination.page}</span>
+            {loading ? <span>Cargando...</span> : <span>Página {pagination.page} de {Math.ceil(totalItems / pagination.pageSize)}</span>}
             <button
-              disabled={data.length < pagination.pageSize || loading}
-              onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
+              disabled={pagination.page >= Math.ceil(totalItems / pagination.pageSize) || loading}
+              onClick={() => fetchData(Math.min(pagination.page + 1, Math.ceil(totalItems / pagination.pageSize)))}
               className="ml-3 px-3 py-1 bg-gray-200 rounded disabled:opacity-50"
             >
               ▶
             </button>
-          </div>
+        </div>
       </div>
     </div>
   );
