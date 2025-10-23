@@ -38,6 +38,7 @@ const columns: ColumnDef<Reservation>[] = [
       case 'to_pay': return 'Por Pagar';
       case 'payed': return 'Pagada';
       case 'paying': return 'En Proceso de Pago';
+      case 'cancelled': return 'Cancelada';
       default: return status;
     }
   }},
@@ -169,6 +170,7 @@ const ReservationTable = () => {
             { label: 'Por Pagar', value: 'to_pay' },
             { label: 'Pagada', value: 'payed' },
             { label: 'En Proceso de Pago', value: 'paying' },
+            { label: 'Cancelada', value: 'cancelled' },
           ] },
         ]}
       />

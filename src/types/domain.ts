@@ -117,7 +117,7 @@ export type FinalUser = {
 }
 
 
-export type ReservationStatus = 'to_confirm' | 'to_pay' | 'payed' | 'paying';
+export type ReservationStatus = 'to_confirm' | 'to_pay' | 'payed' | 'paying' | 'cancelled';
 
 // Tipo para cada reserva o item
 export interface Reservation {

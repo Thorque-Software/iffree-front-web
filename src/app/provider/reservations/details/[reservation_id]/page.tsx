@@ -28,6 +28,7 @@ const reservationStatuses = [
   { label: 'Por Pagar', value: 'to_pay' },
   { label: 'Pagada', value: 'payed' },
   { label: 'En Proceso de Pago', value: 'paying' },
+  { label: 'Cancelada', value: 'cancelled' },
 ];
 
 interface ReservationDetailProps {
