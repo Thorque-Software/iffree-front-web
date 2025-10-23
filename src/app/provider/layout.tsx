@@ -20,9 +20,15 @@ const ProviderLayout: React.FC<ProviderLayoutProps> = ({ children }) => {
   ];
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar items={sidebarItems} />
-      <main className="flex-1 p-8">{children}</main>
+    <div className="flex h-screen bg-gray-50 overflow-hidden">
+      {/* Sidebar fijo */}
+      <div className="sticky top-0 h-screen">
+        <Sidebar items={sidebarItems} />
+      </div>
+      {/* Contenido desplazable */}
+      <main className="flex-1 overflow-y-auto p-8">
+        {children}
+      </main>
     </div>
   );
 };

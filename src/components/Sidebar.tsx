@@ -21,7 +21,7 @@ const Sidebar: React.FC<SidebarProps> = ({ items }) => {
   const { logout } = useAuth();
 
   return (
-    <aside className="flex flex-col justify-between h-auto w-64 bg-white shadow-md p-6">
+    <aside className="flex flex-col justify-between h-full w-64 bg-white shadow-md p-6">
       <div>
         {/* Logo */}
         <div className="flex justify-center">
