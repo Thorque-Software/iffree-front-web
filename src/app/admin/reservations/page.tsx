@@ -6,6 +6,7 @@ import { getReservations } from '@/services/ApiHandler';
 import { Reservation } from '@/types/domain';
 import { DataTable } from '@/components/DataTable';
 import { formatDate } from '@/utils/utils';
+import Link from 'next/link';
 
 
 const columns: ColumnDef<Reservation>[] = [
@@ -37,6 +38,15 @@ const columns: ColumnDef<Reservation>[] = [
       default: return status;
     }
   }},
+  {
+    id: "actions",
+    header: "Acciones",
+    cell: ({ row }) => {
+      return (
+        <Link href={`/admin/reservations/details/${row.original.id}`} className="bg-green-700 text-white px-4 py-2 rounded mr-4">Detalle</Link>
+      );
+    },
+  },
 ];
 
 const ReservationTable = () => {

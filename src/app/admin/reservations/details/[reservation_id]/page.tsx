@@ -5,8 +5,7 @@ import { ColumnDef } from '@tanstack/react-table';
 import Swal from 'sweetalert2';
 import { DataTable } from '@/components/DataTable';
 import { Reservation, FinalUser } from '@/types/domain';
-import { getReservationProviderById, DeleteProviderReservation,PutProviderReservationStatus, PutProviderReservationToConfirm } from '@/services/ApiHandler';
-import { useAuth } from '@/hooks/useAuth';
+import { getOneReservation, DeleteReservation,PutReservationStatus, PutReservationToConfirm } from '@/services/ApiHandler';
 import { useRouter } from 'next/navigation';
 
 
@@ -16,11 +15,6 @@ const attendeeColumns: ColumnDef<FinalUser>[] = [
   { accessorKey: 'email', header: 'Email' },
   { accessorKey: 'docNumber', header: 'Documento' },
   { accessorKey: 'dateOfBirth', header: 'Nacimiento' },
-];
-
-const reservationSelectStatuses = [
-  { label: 'En Proceso de Pago', value: 'paying' },
-  { label: 'Pagada', value: 'payed' },
 ];
 
 const reservationStatuses = [
@@ -37,17 +31,14 @@ interface ReservationDetailProps {
 
 const ReservationDetail = ({ params }: ReservationDetailProps) => {
   const router = useRouter();
-  const { user } = useAuth();
-  const [providerId, setProviderId] = useState<string>("");
   const { reservation_id } = React.use(params);
   const [reservation, setReservation] = useState<Reservation | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const fetchData = async (providerIdParams?: string) => {
+  const fetchData = async () => {
     setLoading(true);
-    const providerIdToUse = providerIdParams || providerId;
     try {
-      const res = await getReservationProviderById(providerIdToUse, reservation_id);
+      const res = await getOneReservation(reservation_id);
       setReservation(res);
     } finally {
       setLoading(false);
@@ -55,25 +46,8 @@ const ReservationDetail = ({ params }: ReservationDetailProps) => {
   };
 
     useEffect(() => {
-    if (user && user.providerId) {
-      setProviderId(user.providerId);
-      fetchData(user.providerId);
-    }
-  }, [reservation_id,user]);
-
-  const handleChangeStatus = async (newStatus: string) => {
-    if (!reservation) return;
-    try {
-      if(newStatus==="decline" || newStatus==="confirm"){
-        await PutProviderReservationToConfirm(providerId, reservation_id, newStatus as "confirm" | "decline");
-      }else await PutProviderReservationStatus(providerId, reservation_id, newStatus);
-      Swal.fire('Actualizado', 'El estado de la reserva fue actualizado', 'success');
       fetchData();
-    } catch (error) {
-      console.error(error);
-      Swal.fire('Error', 'No se pudo actualizar el estado', 'error');
-    }
-  };
+  }, [reservation_id]);
 
   const handleCancelReservation = async () => {
     if (!reservation) return;
@@ -89,9 +63,9 @@ const ReservationDetail = ({ params }: ReservationDetailProps) => {
 
     if (result.isConfirmed) {
       try {
-        await DeleteProviderReservation(providerId, reservation_id);
+        await DeleteReservation(reservation_id);
         Swal.fire('Cancelada', 'La reserva fue cancelada', 'success');
-        router.push('/provider/reservations');
+        router.push('/admin/reservations');
       } catch (error) {
         Swal.fire('Error', 'No se pudo cancelar la reserva', 'error');
       }
@@ -122,39 +96,7 @@ const ReservationDetail = ({ params }: ReservationDetailProps) => {
           <ul className="space-y-1 text-gray-800">
             <li>
               <strong>Estado:</strong>{' '}
-              {reservation.status === "to_confirm" ? (             
-                <div className="flex gap-2">
-                  <span className="ml-2 text-blue-600 font-semibold">Por Confirmar</span>
-                  <button
-                    onClick={() => handleChangeStatus("confirm")}
-                    className="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded"
-                  >
-                    Aceptar
-                  </button>
-                  <button
-                    onClick={() => handleChangeStatus("decline")}
-                    className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded"
-                  >
-                    Rechazar
-                  </button>
-                </div>
-              ) : (reservation.finalUser || reservation.finalPrice !== 0) ? (
-                // Caso 1: tiene finalUser y status != to_confirm → solo mostrar texto
-                <span className="ml-2">{reservationStatuses.find(s => s.value === reservation.status)?.label || reservation.status}</span>
-              ) : (
-                // Caso 2: no tiene finalUser → select editable
-                <select
-                  value={reservation.status}
-                  onChange={(e) => handleChangeStatus(e.target.value)}
-                  className="border p-1 rounded"
-                >
-                  {reservationSelectStatuses.map((s) => (
-                    <option key={s.value} value={s.value}>
-                      {s.label}
-                    </option>
-                  ))}
-                </select>
-              )}
+              {reservationStatuses.find(s => s.value === reservation.status)?.label || reservation.status}
             </li>
             <li><strong>Precio Final:</strong> ${reservation?.finalPrice}</li>
             <li><strong>Creada:</strong> {new Date(reservation.createdAt).toLocaleString()}</li>

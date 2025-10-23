@@ -10,17 +10,17 @@ import { useRouter } from "next/navigation";
 
 
 function mapShifts(data: Shift[]): { id: number; shift: string }[] {
-  return Object.values(data).map((item) => {
-    const formatTimeUTC = (iso: string) => {
+  return data.map((item) => {
+    const formatTimeLocal = (iso: string) => {
       const d = new Date(iso);
-      const hours = String(d.getUTCHours()).padStart(2, '0');
-      const minutes = String(d.getUTCMinutes()).padStart(2, '0');
+      const hours = String(d.getHours()).padStart(2, '0');
+      const minutes = String(d.getMinutes()).padStart(2, '0');
       return `${hours}:${minutes}`;
     };
 
     return {
       id: item.id,
-      shift: `${formatTimeUTC(item.start)} a ${formatTimeUTC(item.end)}`,
+      shift: `${formatTimeLocal(item.start)} a ${formatTimeLocal(item.end)}`,
     };
   });
 }
@@ -73,7 +73,7 @@ export default function NewReservation() {
           await PostProviderReservation(providerId, data);
           Swal.fire({
             icon: 'success',
-            title: 'Servicio creado con éxito',
+            title: 'Reserva creada con éxito',
             showConfirmButton: false,
             timer: 1500
           }).then(() => {
