@@ -7,8 +7,13 @@ import type {
   City,
   ServiceType,
   Service,
+  Boat,
+  Dock,
+  boatType,
+  ReservationBoat
 } from "@/types/domain";
 import { addOneDay, getTodayFormatted } from "@/utils/utils";
+import startOfDay from "date-fns/startOfDay";
 
 // ---------- Tipos Genéricos ----------
 type PaginatedResponse<T> = {
@@ -76,8 +81,11 @@ export const getShiftsProvider = (providerId: string, params: {
     fromDate: getTodayFormatted(),
   });
 
-  export const getOneShiftProvider = (providerId: string, shiftId: string) =>
+export const getOneShiftProvider = (providerId: string, shiftId: string) =>
   fetchOne<Shift>(`/providers/${providerId}/shifts/${shiftId}`);
+
+export const getOneProviderBoat = (providerId: string, boatId: string) =>
+  fetchOne<Boat>(`/providers/${providerId}/boats/${boatId}`);
 
 export const getShiftsServicesByDate = (providerId: string, date: string ,serviceId?: number, dateTo?: string) =>
   fetchList<Shift>(`/providers/${providerId}/shifts`, {
@@ -137,6 +145,7 @@ export const getOneServiceDetail = (id: string) =>
 export const getOneServiceDetailProvider = (providerId: string, serviceId: string) =>
   fetchOne<ServiceDetail>(`/providers/${providerId}/services/${serviceId}`);
 
+
 export const getProviderServices = (providerId: string,params: {
   page: number;
   pageSize: number;
@@ -145,6 +154,31 @@ export const getProviderServices = (providerId: string,params: {
   const { filters, ...rest } = params;
   return fetchList<ServiceDetail>(`/providers/${providerId}/services`, { ...rest, ...filters });
 };
+
+export const getProviderBoats = (providerId: string,params: {
+  page: number;
+  pageSize: number;
+  filters?: Record<string, any>;
+}) => {
+  const { filters, ...rest } = params;
+  return fetchList<Boat>(`/providers/${providerId}/boats`, { ...rest, ...filters });
+};
+
+export const getBoatTypes = () => fetchList<boatType>("/boat-types",{ page: 1, pageSize: 100 });
+
+export const getDocks = () => fetchList<Dock>("/docks");
+
+export const getProviderProfit = (providerId: string, year: number, month: number) =>
+  fetchOne<{ day: string; profit: number }[]>(
+    `/providers/${providerId}/get-profit?year=${year}&month=${month}`
+  );
+
+export const getProviderBoatReservations = (providerId: string, start?: string, end?: string) =>
+  fetchList<ReservationBoat>(`/providers/${providerId}/boat-reservations`, { startDate: start, endDate: end });
+
+export const getOneProviderBoatReservation = (providerId: string, reservationId: string) =>
+  fetchOne<ReservationBoat>(`/providers/${providerId}/boat-reservations/${reservationId}`);
+
 export const getOneProvider = (providerId: string) =>
   fetchOne<Provider>(`/providers/${providerId}`);
 
@@ -199,6 +233,12 @@ export const PostService = (data: Partial<Service>) =>
 export const PostProviderService = (providerId: string, data: Partial<Service>) =>
   post<ServiceDetail>(`/providers/${providerId}/services`, data);
 
+export const PostProviderBoat = (providerId: string, data: Partial<Boat>) =>
+  post<Boat>(`/providers/${providerId}/boats`, data);
+
+export const CancelProviderBoatReservations = (providerId: string, boatId: number, start: string, end: string) =>
+  post<{boatId: number, start: string, end: string}>(`/providers/${providerId}/boat-reservations`, { boatId, start, end });
+
 export const PostProviderReservation = (providerId: string, data: Partial<Reservation>) =>
   post<Reservation>(`/providers/${providerId}/reservations`, data);
 
@@ -220,12 +260,21 @@ export const PutReservationToConfirm = (id: string, status: "confirm" | "decline
 export const PutProvider = (id: string, data: Partial<ProviderData>) =>
   put<Provider>(`/providers/${id}`, data);
 
+export const PutProviderBoat = (providerId: string, boatId: string, data: Partial<Boat>) =>
+  put<Boat>(`/providers/${providerId}/boats/${boatId}`, data);
+
 export const DeleteService = (id: number) => del(`/services/${id}`);
+
+export const DeleteProviderBoat = (providerId: string, boatId: number) =>
+  del(`/providers/${providerId}/boats/${boatId}`);
 
 export const DeleteReservation = (id: string) =>del(`/reservations/${id}`);
 
 export const DeleteProviderReservation = (providerId: string, id: string) =>
   del(`/providers/${providerId}/reservations/${id}`);
+
+export const DeleteProviderBoatReservation = (providerId: string, reservationId: string) =>
+  del(`/providers/${providerId}/boat-reservations/${reservationId}`);
 
 export const DeleteProviderShift = (providerId: string, shiftId: string) =>
   del(`/providers/${providerId}/shifts/${shiftId}`);
@@ -254,6 +303,10 @@ export const uploadMedia = async (serviceId: string, files: FormData) => {
   return handleMedia(`/services/${serviceId}/images`, files);
 };
 
+export const uploadMediaProviderBoat = async (providerId: string, boatId: string, files: FormData) => {
+  return handleMedia(`/providers/${providerId}/boats/${boatId}/images`, files);
+};
+
 export const uploadProviderProfileImage = async (providerId: string, file: File) => {
   const formData = new FormData();
   formData.append("image", file, file.name);
@@ -275,6 +328,9 @@ export const deleteMedia = (serviceId: string, mediaId: number) =>
 
 export const reorderMedia = (serviceId: string, mediaOrder: number[]) =>
   put(`/services/${serviceId}/images`, { medias: mediaOrder });
+
+export const reorderMediaProviderBoat = (providerId: string, boatId: string, mediaOrder: number[]) =>
+  put(`/providers/${providerId}/boats/${boatId}/images`, { medias: mediaOrder });
 
 
 // ---------- Geocoding Utilities ----------

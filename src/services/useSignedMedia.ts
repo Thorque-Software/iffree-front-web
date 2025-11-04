@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { MediaService } from "@/types/domain";
+import { MediaService, MediaBoats } from "@/types/domain";
 import { apiFetch } from "@/lib/fetcher";
 
 type UnsignedMedia = { id: number; path: string };
 type SignedMedia = { id: number; url: string };
 
-export function useSignedMedia(mediaService: MediaService[]) {
+export function useSignedMedia(mediaService: MediaService[] | MediaBoats[]) {
   const [urls, setUrls] = useState<SignedMedia[]>([]);
   const [loading, setLoading] = useState(true);
 

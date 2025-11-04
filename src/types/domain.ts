@@ -58,9 +58,9 @@ export type ServiceType = {
 type Media = {
   id: number;
   path: string;
-  createdAt: string;
-  updatedAt: string;
-  deletedAt: string | null;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
 };
 
 export type MediaService = {
@@ -72,6 +72,17 @@ export type MediaService = {
   updatedAt: string;
   deletedAt: string | null;
   media: Media;
+};
+
+export type MediaBoats = {
+    id: number;
+    boatId: number;
+    mediaId: number;
+    order: number;
+    createdAt?: string;
+    updatedAt?: string;
+    deletedAt?: string | null;
+    media: Media;
 };
 
 export interface ServiceDetail extends Service {
@@ -132,4 +143,65 @@ export interface Reservation {
   shift: Shift;
   finalUser: FinalUser;
   attendees: FinalUser[];
+}
+
+export interface Boat {
+  id: number;
+  dockId: number;
+  boatTypeId: number;
+  name: string;
+  enginePower: number;
+  capacity: number;
+  licenseType: "basic" | "professional" | "special";
+  eslora: number;
+  manga: number;
+  puntal: number;
+  tankCapacity: number;
+  autonomy: number;
+  price: number;
+  providerId: number;
+  status: "active" | "inactive" | "maintenance";
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
+  provider: Partial<Provider>;
+  boatType: boatType;
+  dock: Dock;
+  mediaBoats: MediaBoats[];
+}
+
+export type boatType = {
+  id: number;
+  name: string;
+  createdAt?: string;
+  updatedAt?: string;
+  deletedAt?: string | null;
+}
+
+export interface Dock {
+  id: number;
+  name: string;
+  locationLat: number;
+  locationLong: number;
+  boya?: boolean;
+}
+
+export interface ReservationBoat {
+  id: number;
+  mediaLicense: number | null;
+  invoice: number | null;
+  boatId: number;
+  dockId: number;
+  finalUserId: number;
+  start: string;
+  end: string;
+  finalPrice: number;
+  status: ReservationStatus;
+  paymentId: number | null;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  boat: Boat;
+  dock: Dock;
+  finalUser: FinalUser;
 }

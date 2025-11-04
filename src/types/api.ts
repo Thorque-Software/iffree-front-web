@@ -27,6 +27,7 @@ token: string
 export type JwtPayload = {
 id: number
 providerId?: number
+providerType?: string
 role: Role
 exp: number
 iat: number

@@ -17,9 +17,18 @@ export default function Home() {
   // Redirección según el rol
   useEffect(() => {
     if (!user) return;
-    if (user.role === "admin") router.replace("/admin");
-    if (user.role === "provider" || user.role === "providerBoat") {
-      router.replace("/provider");
+    switch (user.role) {
+      case "admin":
+        router.push("/admin");
+        break;
+      case "providerBoat":
+        router.push("/providerBoat");
+        break;
+      case "provider":
+        router.push("/provider");
+        break;
+      default:
+        router.push("/");
     }
   }, [user, router]);
 

@@ -33,8 +33,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!res.success || !res.data) throw new Error(res.error || 'Login failed')
     localStorage.setItem('token', res.data.token)
     const decoded = jwtDecode<JwtPayload>(res.data.token)
+    console.log(decoded)
     const loggedUser: User = {
-      role: decoded.role,
+      role: decoded.role === 'admin' ? 'admin' : (decoded.role === 'provider' && decoded?.providerType === "boat") ? 'providerBoat' : 'provider',
       token: res.data.token,
       providerId: decoded.providerId ? String(decoded.providerId) : undefined,
     }
