@@ -10,10 +10,10 @@ import type {
   Boat,
   Dock,
   boatType,
-  ReservationBoat
+  ReservationBoat,
+  ProfitResponse
 } from "@/types/domain";
 import { addOneDay, getTodayFormatted } from "@/utils/utils";
-import startOfDay from "date-fns/startOfDay";
 
 // ---------- Tipos Genéricos ----------
 type PaginatedResponse<T> = {
@@ -169,7 +169,7 @@ export const getBoatTypes = () => fetchList<boatType>("/boat-types",{ page: 1, p
 export const getDocks = () => fetchList<Dock>("/docks");
 
 export const getProviderProfit = (providerId: string, year: number, month: number) =>
-  fetchOne<{ day: string; profit: number }[]>(
+  fetchOne<ProfitResponse>(
     `/providers/${providerId}/get-profit?year=${year}&month=${month}`
   );
 

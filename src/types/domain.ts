@@ -7,6 +7,11 @@ export interface City {
   deletedAt: string | null;
 }
 
+export type ProfitResponse = {
+  subtotals: { serviceId: number, totalProfit: number }[];
+  total: number;
+};
+
 export interface Provider {
   id: number;
   fullname: string;
