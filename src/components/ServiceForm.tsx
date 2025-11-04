@@ -196,6 +196,7 @@ export default function ServiceForm({ initialValues = {}, onSubmit, isAdmin = tr
               ...prev,
               locationLat: loc.lat,
               locationLong: loc.lng,
+              location: loc.location,
             }))
           }
         />

@@ -53,7 +53,7 @@ function RecenterMap({ lat, lng }: { lat: number; lng: number }) {
 
 interface LocationPickerProps {
   value: { lat?: number; lng?: number };
-  onChange: (value: { lat?: number; lng?: number }) => void;
+  onChange: (value: { lat?: number; lng?: number; location?: string }) => void;
 }
 
 export default function LocationPicker({ value, onChange }: LocationPickerProps) {
@@ -92,7 +92,8 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
 
     const coords = await placesDetails(s.placeId);
     if (coords) {
-      onChange({ lat: coords.latitude, lng: coords.longitude });
+      console.log(selectedText, coords);
+      onChange({ lat: coords.latitude, lng: coords.longitude, location: selectedText });
     } else {
       Swal.fire({
         icon: "error",
@@ -103,9 +104,14 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
 
   const handleMapClick = (lat: number, lng: number) => {
     onChange({ lat, lng });
-    reverseGeocode(lat, lng).then((addr) => addr && setSearch(addr));
+    reverseGeocode(lat, lng).then((addr) => {
+      if (addr) {
+        setSearch(addr);
+        onChange({ lat, lng, location: addr });
+      }
+    });
   };
-
+  
   return (
     <div className="space-y-2 relative">
       <Combobox value={search} onChange={handleSelect}>

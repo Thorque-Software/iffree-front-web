@@ -33,6 +33,7 @@ export interface Service {
   description: string;
   forAdultsOnly: boolean;
   suggestedMaxCapacity: number;
+  location: string;
   locationLat: number;
   locationLong: number;
   price: number;
