@@ -82,25 +82,29 @@ export default function LocationPicker({ value, onChange }: LocationPickerProps)
     return () => clearTimeout(timeout);
   }, [search]);
 
-  // Selección de sugerencia
-  const handleSelect = async (selectedText: string) => {
+  const handleSelect = (selectedText: string | null) => {
+    if (!selectedText) return; // puede ser null
     setSearch(selectedText);
     setSuggestions([]);
 
-    const s = suggestions.find((s) => s.text === selectedText);
+    const s = suggestions.find((sug) => sug.text === selectedText);
     if (!s) return;
 
-    const coords = await placesDetails(s.placeId);
-    if (coords) {
-      console.log(selectedText, coords);
-      onChange({ lat: coords.latitude, lng: coords.longitude, location: selectedText });
-    } else {
-      Swal.fire({
-        icon: "error",
-        title: "No se pudo obtener coordenadas",
-      });
-    }
+    // ejecutamos lo async sin hacer async la función
+    (async () => {
+      const coords = await placesDetails(s.placeId);
+      if (coords) {
+        console.log(selectedText, coords);
+        onChange({ lat: coords.latitude, lng: coords.longitude, location: selectedText });
+      } else {
+        Swal.fire({
+          icon: "error",
+          title: "No se pudo obtener coordenadas",
+        });
+      }
+    })();
   };
+
 
   const handleMapClick = (lat: number, lng: number) => {
     onChange({ lat, lng });
