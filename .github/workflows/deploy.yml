@@ -55,15 +55,15 @@ jobs:
           rm -f deployment.tar.gz
 
           # Stop and remove existing container
-          docker stop iffree-front 2>/dev/null || echo 'Container not running' && \
-          docker rm iffree-front 2>/dev/null || echo 'Container not found' && \
+          docker stop front 2>/dev/null || echo 'Container not running' && \
+          docker rm front 2>/dev/null || echo 'Container not found' && \
 
           # Build the Docker image
-          docker build -t iffree-front . && \
-
-          docker stop front
+          # The image its named ifree-front
+          docker build -t 'iffree-front' . && \
 
           # Run the new container
+          # The container is named 'front'
           docker run -d \
             -p 3000:3000 \
             --name front \
