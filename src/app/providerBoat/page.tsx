@@ -6,13 +6,26 @@ import { getProviderBoatReservations } from '@/services/ApiHandler';
 import { ReservationBoat} from '@/types/domain';
 import { DataTable } from '@/components/DataTable';
 import { useAuth } from '@/hooks/useAuth';
-import { formatDate } from '@/utils/utils';
+import { format } from 'date-fns'
+import { es } from 'date-fns/locale'
 
 
 const columns: ColumnDef<ReservationBoat>[] = [
   {
     accessorKey: 'boat.name',
-    header: 'Nombre de la Embarcación',
+    header: 'Embarcación',
+  },
+  {
+    accessorKey: 'finalUser',
+    header: 'Cliente',
+    cell: ({ row }) => {
+      const user = row.original.finalUser
+      const fullName =
+        user?.name || user?.lastname
+          ? `${user?.name ?? ''} ${user?.lastname ?? ''}`.trim()
+          : 'N/A'
+      return fullName
+    },
   },
   {
     accessorKey: 'dock.name',
@@ -21,12 +34,12 @@ const columns: ColumnDef<ReservationBoat>[] = [
   {
     accessorKey: 'start',
     header: 'Fecha de Inicio',
-    cell: ({ row }) => formatDate(row.original.start),
+    cell: ({ row }) => format(new Date(row.original.start), 'dd/MM/yyyy', { locale: es }),
   },
   {
     accessorKey: 'end',
     header: 'Fecha de Fin',
-    cell: ({ row }) => formatDate(row.original.end),
+    cell: ({ row }) => format(new Date(row.original.end), 'dd/MM/yyyy', { locale: es }),
   },
 ];
 

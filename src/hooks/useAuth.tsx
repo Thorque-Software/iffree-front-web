@@ -60,7 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           logout()
         } else {
           const refreshedUser: User = {
-            role: decoded.role,
+            role: decoded.role === 'admin' ? 'admin' : (decoded.role === 'provider' && decoded?.providerType === "boat") ? 'providerBoat' : 'provider',
             token,
             providerId: decoded.providerId ? String(decoded.providerId) : undefined,
           }
