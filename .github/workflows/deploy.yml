@@ -61,10 +61,11 @@ jobs:
           # Build the Docker image
           docker build -t iffree-front . && \
 
+          docker stop front
+
           # Run the new container
           docker run -d \
             -p 3000:3000 \
-            --rm \
             --name front \
             iffree-front
 
