@@ -2,53 +2,66 @@
 
 import { useEffect, useState } from 'react';
 import { ColumnDef } from '@tanstack/react-table';
-import { getShiftsProvider } from '@/services/ApiHandler';
-import { Shift } from '@/types/domain';
+import { getProviderBoatReservations } from '@/services/ApiHandler';
+import { ReservationBoat} from '@/types/domain';
 import { DataTable } from '@/components/DataTable';
-import { formatDate } from '@/utils/utils';
 import { useAuth } from '@/hooks/useAuth';
+import { formatDate } from '@/utils/utils';
 
 
-const columns: ColumnDef<Shift>[] = [
-  { accessorKey: 'start', header: 'Inicio', cell: ({ row }) => formatDate(row.original.start) },
-  { accessorKey: 'end', header: 'Fin', cell: ({ row }) => formatDate(row.original.end) },
-  { accessorKey: 'maxCapacity', header: 'Capacidad Máxima' },
-  { accessorKey: 'status', header: 'Estado' },
-  { accessorKey: 'availablePlaces', header: 'Lugares Disponibles' },
+const columns: ColumnDef<ReservationBoat>[] = [
+  {
+    accessorKey: 'boat.name',
+    header: 'Nombre de la Embarcación',
+  },
+  {
+    accessorKey: 'dock.name',
+    header: 'Muelle',
+  },
+  {
+    accessorKey: 'start',
+    header: 'Fecha de Inicio',
+    cell: ({ row }) => formatDate(row.original.start),
+  },
+  {
+    accessorKey: 'end',
+    header: 'Fecha de Fin',
+    cell: ({ row }) => formatDate(row.original.end),
+  },
 ];
 
 const ShiftsTable = () => {
   const { user } = useAuth();
   const [providerId, setProviderId] = useState<string>("");
-  const [data, setData] = useState<Shift[]>([]);
-  const [pagination, setPagination] = useState({ page: 1, pageSize: 5 });
+  const [data, setData] = useState<ReservationBoat[]>([]);
   const [total, setTotal] = useState(0);
+  const [pagination, setPagination] = useState({ page: 1, pageSize: 10 });
   const [loading, setLoading] = useState(false);
 
-  const fetchData = async (page: number, providerIdParams?: string) => {
+  const fetchData = async (providerIdParams?: string) => {
     setLoading(true);
     try {
       const providerIdToUse = providerIdParams || providerId;
-      const res = await getShiftsProvider(providerIdToUse, { page, pageSize: pagination.pageSize });
+      const res = await getProviderBoatReservations(providerIdToUse,undefined, undefined, total, pagination);
       setData(res.items);
-      setPagination(res.pagination);
       setTotal(res.total);
+      setPagination((prev) => ({ ...prev, page: pagination.page }));
     } finally {
       setLoading(false);
     }
   };
+
   useEffect(() => {
       if(user && user.providerId) {
       setProviderId(user.providerId);
-      fetchData(pagination.page, user.providerId);    
+      fetchData(user.providerId);    
       }
     }, [user]);
 
   useEffect(() => {
-    if (!providerId) return;
-    fetchData(pagination.page);
-  }, [pagination.page, user]);
-
+      if (!providerId) return;
+      fetchData();
+    }, [pagination.page]);
 
 
   return (

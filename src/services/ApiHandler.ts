@@ -173,8 +173,8 @@ export const getProviderProfit = (providerId: string, year: number, month: numbe
     `/providers/${providerId}/get-profit?year=${year}&month=${month}`
   );
 
-export const getProviderBoatReservations = (providerId: string, start?: string, end?: string) =>
-  fetchList<ReservationBoat>(`/providers/${providerId}/boat-reservations`, { startDate: start, endDate: end });
+export const getProviderBoatReservations = (providerId: string, start?: string, end?: string, total?: number, pagination?: { page: number; pageSize: number }) =>
+  fetchList<ReservationBoat>(`/providers/${providerId}/boat-reservations`, { startDate: start, endDate: end, total, ...pagination });
 
 export const getOneProviderBoatReservation = (providerId: string, reservationId: string) =>
   fetchOne<ReservationBoat>(`/providers/${providerId}/boat-reservations/${reservationId}`);
